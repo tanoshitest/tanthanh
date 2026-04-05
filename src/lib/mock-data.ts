@@ -49,7 +49,7 @@ export const sessions = [
   { id: "s-002", classId: "class-001", date: "2025-01-23", day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-001", topic: "Lặng lẽ Sa Pa - P2" },
   { id: "s-003", classId: "class-001", date: "2025-01-27", day: "Thứ 2", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-002", topic: "NLXH: Lòng dũng cảm" },
   { id: "s-004", classId: "class-001", date: "2025-01-30", day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-002", topic: "Luyện viết NLXH" },
-  { id: "s-005", classId: "class-001", date: "2025-02-03", day: "Thứ 2", time: "18:00-20:00", type: "offline", status: "upcoming" as const, teacherId: "gv-001", lessonId: "lesson-003", topic: "Đoạn văn NLVH" },
+  { id: "s-005", classId: "class-001", date: "2025-02-03", day: "Thứ 2", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-003", topic: "Đoạn văn NLVH" },
   { id: "s-006", classId: "class-002", date: "2025-01-21", day: "Thứ 3", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-001", topic: "Lặng lẽ Sa Pa" },
   { id: "s-007", classId: "class-002", date: "2025-01-24", day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-002", topic: "NLXH: Lập dàn ý" },
   { id: "s-008", classId: "class-002", date: "2025-01-28", day: "Thứ 3", time: "18:00-20:00", type: "offline", status: "upcoming" as const, teacherId: "gv-001", lessonId: "lesson-003", topic: "Luyện viết đoạn văn" },
@@ -91,6 +91,12 @@ export const sessionAttendance = [
     { studentId: "hs-001", studentName: "Nguyễn Minh Khôi", status: "present" as const, note: "" },
     { studentId: "hs-003", studentName: "Trương Đình Phúc", status: "present" as const, note: "" }
   ]},
+  { sessionId: "s-005", records: [
+    { studentId: "hs-001", studentName: "Nguyễn Minh Khôi", status: "present" as const, note: "" },
+    { studentId: "hs-002", studentName: "Nguyễn Thị Hạ Vy", status: "present" as const, note: "" },
+    { studentId: "hs-003", studentName: "Trương Đình Phúc", status: "late" as const, note: "Trễ 5p" },
+    { studentId: "hs-005", studentName: "Hoàng Gia Bảo", status: "present" as const, note: "" }
+  ]},
   { sessionId: "s-009", records: [
     { studentId: "hs-002", studentName: "Nguyễn Thị Hạ Vy", status: "present" as const, note: "" },
     { studentId: "hs-005", studentName: "Hoàng Gia Bảo", status: "late" as const, note: "Trễ 5p" }
@@ -107,7 +113,17 @@ export const sessionEvaluations = [
   { sessionId: "s-002", studentId: "hs-003", criteria: { knowledgeAbsorption: 7, classFocus: 6, examSkills: 6, selfStudy: 7, diligence: 6, interaction: 5 }, comment: "Vào trễ, chưa tập trung, cần cải thiện thái độ học online." },
   { sessionId: "s-003", studentId: "hs-001", criteria: { knowledgeAbsorption: 9, classFocus: 8, examSkills: 9, selfStudy: 8, diligence: 9, interaction: 8.5 }, comment: "NLXH tốt, lập luận chặt chẽ và sâu sắc." },
   { sessionId: "s-003", studentId: "hs-003", criteria: { knowledgeAbsorption: 8, classFocus: 8, examSkills: 7, selfStudy: 7, diligence: 8, interaction: 8 }, comment: "Có sự tiến bộ rõ rệt trong cách viết." },
-  { sessionId: "s-004", studentId: "hs-001", criteria: { knowledgeAbsorption: 8.5, classFocus: 8, examSkills: 8.5, selfStudy: 8, diligence: 9, interaction: 8 }, comment: "Luyện viết tiến bộ, diễn đạt trôi chảy." }
+  { sessionId: "s-004", studentId: "hs-001", criteria: { knowledgeAbsorption: 8.5, classFocus: 8, examSkills: 8.5, selfStudy: 8, diligence: 9, interaction: 8 }, comment: "Luyện viết tiến bộ, diễn đạt trôi chảy." },
+  { 
+    sessionId: "s-005", studentId: "hs-001",
+    criteria: { knowledgeAbsorption: 9, classFocus: 9, examSkills: 8.5, selfStudy: 8, diligence: 9, interaction: 9 },
+    comment: "Khôi nắm rất vững kỹ năng viết đoạn văn NLVH. Cần chú ý thêm cách dùng từ cho mượt mà hơn."
+  },
+  { 
+    sessionId: "s-005", studentId: "hs-002",
+    criteria: { knowledgeAbsorption: 8.5, classFocus: 8, examSkills: 8, selfStudy: 9, diligence: 9, interaction: 8 },
+    comment: "Vy có tiến bộ vượt bậc trong cách lập dàn ý. Rất chăm chỉ phát biểu."
+  }
 ];
 
 export const lessons = [
@@ -152,7 +168,25 @@ export const lessons = [
   {
     id: "lesson-003", classId: "class-001", title: "Đoạn văn nghị luận văn học",
     description: "Phương pháp viết đoạn văn NLVH hiệu quả", order: 3, sessionIds: ["s-005"],
-    videos: [{ id: "v-006", title: "Kỹ thuật viết đoạn văn NLVH", url: "https://www.w3schools.com/html/mov_bbb.mp4", duration: 1000, quizzes: [] }], 
+    videos: [{ 
+      id: "v-006", 
+      title: "Kỹ thuật viết đoạn văn NLVH", 
+      url: "https://www.w3schools.com/html/mov_bbb.mp4", 
+      duration: 3000, 
+      quizzes: [],
+      segments: [
+        { id: "seg-1", timestamp: 0, label: "00:00 - Giới thiệu cấu trúc đoạn văn 200 chữ" },
+        { id: "seg-2", timestamp: 300, label: "05:00 - Phân tích yêu cầu đề bài (Key terms)" },
+        { id: "seg-3", timestamp: 600, label: "10:00 - Cách viết mở đoạn ấn tượng" },
+        { id: "seg-4", timestamp: 900, label: "15:00 - Triển khai luận điểm 1: Nội dung" },
+        { id: "seg-5", timestamp: 1200, label: "20:00 - Triển khai luận điểm 2: Nghệ thuật" },
+        { id: "seg-6", timestamp: 1500, label: "25:00 - Cách trích dẫn thơ/văn bản hiệu quả" },
+        { id: "seg-7", timestamp: 1800, label: "30:00 - Liên hệ thực tế và mở rộng vấn đề" },
+        { id: "seg-8", timestamp: 2100, label: "35:00 - Các lỗi diễn đạt thường gặp" },
+        { id: "seg-9", timestamp: 2400, label: "40:00 - Kỹ thuật viết kết đoạn súc tích" },
+        { id: "seg-10", timestamp: 2700, label: "45:00 - Tổng kết và sửa bài mẫu thực tế" }
+      ]
+    }], 
     attachments: [{ id: "att-004", name: "Mẫu đoạn văn.pdf", size: "800 KB" }],
     summaryQuiz: { questions: [
         { id: "sq-004", question: "Các bước triển khai đoạn văn NLVH?", type: "essay" }
@@ -191,6 +225,16 @@ export const assignments = [
     submissions: [
       { id: "sub-004", studentId: "hs-001", studentName: "Nguyễn Minh Khôi", submittedAt: "2025-02-12", type: "upload_image", score: 7.5, feedback: "Luận điểm rõ, dẫn chứng chung.", status: "graded" as const },
       { id: "sub-005", studentId: "hs-003", studentName: "Trương Đình Phúc", submittedAt: "2025-02-13", type: "upload_image", score: 8.0, feedback: "Rất tốt, sáng tạo.", status: "graded" as const }
+    ]
+  },
+  {
+    id: "assgn-s005-001", sessionId: "s-005", lessonId: "lesson-003", classId: "class-001",
+    title: "Viết đoạn văn NLVH về khổ 1 bài Mùa xuân nho nhỏ",
+    submitType: "online_or_upload" as const, dueDate: "2025-02-05", totalPoints: 10,
+    submissions: [
+      { id: "sub-005-1", studentId: "hs-001", studentName: "Nguyễn Minh Khôi", status: "submitted" as const, score: 0, submittedAt: "2025-02-04 14:00", feedback: "", imageUrls: ["https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1000"] },
+      { id: "sub-005-2", studentId: "hs-002", studentName: "Nguyễn Thị Hạ Vy", status: "graded" as const, score: 9, submittedAt: "2025-02-04 15:30", feedback: "Phân tích hay, giàu cảm xúc.", imageUrls: ["https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1000"] },
+      { id: "sub-005-3", studentId: "hs-003", studentName: "Trương Đình Phúc", status: "submitted" as const, score: 0, submittedAt: "2025-02-04 19:45", feedback: "", imageUrls: ["https://images.unsplash.com/photo-1531346761392-51f938217036?q=80&w=1000"] }
     ]
   }
 ];

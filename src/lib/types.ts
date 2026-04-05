@@ -75,12 +75,19 @@ export interface Quiz {
   correctAnswer: number;
 }
 
+export interface VideoSegment {
+  id: string;
+  timestamp: number; // in seconds
+  label: string;
+}
+
 export interface Video {
   id: string;
   title: string;
   url: string;
   duration: number;
   quizzes: Quiz[];
+  segments?: VideoSegment[];
 }
 
 export interface Lesson {

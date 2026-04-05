@@ -16,8 +16,7 @@ const items = [
   { title: "Báo cáo học tập", url: "/parent/report", icon: BarChart3 },
   { title: "Lớp học của tôi", url: "/parent/classes", icon: BookOpen },
   { title: "Học phí", url: "/parent/tuition", icon: DollarSign },
-  { title: "Luyện đề thi", url: "/parent/practice-exams", icon: FileText },
-  { title: "Kiến thức tham khảo", url: "/parent/library", icon: Library },
+  { title: "Thư viện kiến thức", url: "/parent/library", icon: Library },
   { title: "Cộng đồng", url: "/parent/community", icon: MessageSquare },
 ];
 

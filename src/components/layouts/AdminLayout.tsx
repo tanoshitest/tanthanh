@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 const items = [
   { title: "Quản lý User", url: "/admin/users", icon: Users },
   { title: "Quản lý lớp học", url: "/admin/classes", icon: BookOpen },
-  { title: "Bài tập & Luyện đề", url: "/admin/assignments", icon: ClipboardList },
   { title: "Báo cáo", url: "/admin/reports", icon: BarChart3 },
   { title: "Lịch dạy", url: "/admin/schedule", icon: Calendar },
   { title: "Cộng đồng", url: "/admin/community", icon: MessageSquare },
