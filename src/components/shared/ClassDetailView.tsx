@@ -154,10 +154,10 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
       {selectedSession && (
         <Tabs defaultValue="attendance" className="w-full">
           <TabsList className="bg-muted/30 p-1 w-full justify-start overflow-x-auto no-scrollbar h-auto">
-            <TabsTrigger value="attendance" className="text-xs px-4 py-2">Điểm danh</TabsTrigger>
-            <TabsTrigger value="evaluation" className="text-xs px-4 py-2">Nhận xét</TabsTrigger>
-            <TabsTrigger value="lessons" className="text-xs px-4 py-2">Bài giảng</TabsTrigger>
-            <TabsTrigger value="assignments" className="text-xs px-4 py-2">
+            <TabsTrigger value="attendance" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Điểm danh</TabsTrigger>
+            <TabsTrigger value="evaluation" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Nhập điểm & Nhận xét</TabsTrigger>
+            <TabsTrigger value="lessons" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Bài giảng</TabsTrigger>
+            <TabsTrigger value="assignments" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">
               Bài tập 
               {!readonly && ungradedCount > 0 && (
                 <Badge variant="destructive" className="ml-1 text-[10px] h-4 min-w-[16px] px-1 animate-pulse">
@@ -168,119 +168,77 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
           </TabsList>
 
           <TabsContent value="attendance" className="mt-4">
-            <Card className="border-none shadow-sm overflow-hidden">
-              <CardHeader className="py-3 px-4 border-b bg-muted/5 flex flex-row items-center justify-between space-y-0">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-admin" />
-                  <CardTitle className="text-xs font-bold uppercase tracking-wider">Danh sách điểm danh</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Buổi học:</span>
-                  <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-                    <SelectTrigger className="w-[180px] h-8 text-[11px] font-medium border-muted-foreground/20 bg-white">
-                      <SelectValue placeholder="Chọn buổi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classSessions.map((s) => (
-                        <SelectItem key={s.id} value={s.id} className="text-[11px]">
-                          {s.date} — {s.day}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="h-10 hover:bg-transparent border-b bg-muted/10">
-                      <TableHead className="w-[200px] text-[10px] font-bold uppercase text-muted-foreground pl-4">Học sinh</TableHead>
-                      <TableHead className="text-center text-[10px] font-bold uppercase text-muted-foreground px-2">Có mặt</TableHead>
-                      <TableHead className="text-center text-[10px] font-bold uppercase text-muted-foreground px-2">Vắng CP</TableHead>
-                      <TableHead className="text-center text-[10px] font-bold uppercase text-muted-foreground px-2">Vắng KP</TableHead>
-                      <TableHead className="text-center text-[10px] font-bold uppercase text-muted-foreground px-2">Trễ</TableHead>
-                      <TableHead className="text-right text-[10px] font-bold uppercase text-muted-foreground pr-4">Liên hệ</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAttendance.map((r) => {
-                      const parent = parentStudentAccounts.find(p => p.children.some(c => c.id === r.studentId));
-                      return (
-                        <TableRow key={r.studentId} className="h-14 hover:bg-muted/5 transition-colors group">
-                          <TableCell className="pl-4">
-                            <div className="flex items-center gap-2">
-                              <div className="h-8 w-8 rounded-full bg-admin/10 flex items-center justify-center text-[10px] font-bold text-admin border border-admin/20">
-                                {r.studentName.charAt(0)}
-                              </div>
-                              <span className="text-xs font-bold whitespace-nowrap">{r.studentName}</span>
-                            </div>
-                          </TableCell>
-                          
-                          <RadioGroup 
-                            defaultValue={r.status} 
-                            asChild
-                            disabled={readonly}
-                            onValueChange={() => toast.info(`Cật nhật trạng thái: ${r.studentName}`)}
-                          >
-                            <>
-                              <TableCell className="text-center">
-                                <RadioGroupItem value="present" className="h-4 w-4 border-muted-foreground/30 text-admin" />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <RadioGroupItem value="absent_excused" className="h-4 w-4 border-status-warning/30 text-status-warning" />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <RadioGroupItem value="absent_unexcused" className="h-4 w-4 border-destructive/30 text-destructive" />
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <RadioGroupItem value="late" className="h-4 w-4 border-status-warning/30 text-status-warning" />
-                              </TableCell>
-                            </>
-                          </RadioGroup>
-                          
-                          <TableCell className="text-right pr-4">
-                            {!readonly && (
-                              <div className="flex justify-end gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="h-7 w-7 p-0 rounded-full border-admin/30 text-admin hover:bg-admin/5"
-                                  onClick={() => toast.success(`Đang gọi phụ huynh: ${parent?.name} - ${parent?.phone}`)}
-                                  title="Gọi điện"
-                                >
-                                  <Phone className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="h-7 w-7 p-0 rounded-full border-green-500/30 text-green-600 hover:bg-green-50"
-                                  onClick={() => toast.info(`Đang nhắn Zalo: ${parent?.zaloPhone}`)}
-                                  title="Nhắn Zalo"
-                                >
-                                  <MessageCircle className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    }) || (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic text-sm">Chưa có dữ liệu điểm danh</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                
-                {!readonly && attendance && (
-                  <div className="p-4 bg-muted/5 border-t flex justify-center">
-                    <Button className="bg-admin h-9 px-8 rounded-full font-bold shadow-lg shadow-admin/20" onClick={() => toast.success("Đã xác nhận điểm danh cho buổi học!")}>
-                      Xác nhận hoàn tất điểm danh
-                    </Button>
+            <div className="space-y-2">
+              {filteredAttendance.map((r) => (
+                <div 
+                  key={r.studentId} 
+                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-muted/20 shadow-sm hover:shadow-md transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-admin/5 flex items-center justify-center text-xs font-bold text-admin border border-admin/10">
+                      {r.studentName.charAt(0)}
+                    </div>
+                    <span className="text-sm font-bold text-slate-700">{r.studentName}</span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  
+                  <div className="flex items-center gap-3">
+                    {readonly ? (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-status-success/10 text-status-success rounded-full border border-status-success/20">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span className="text-[11px] font-bold">Có mặt</span>
+                      </div>
+                    ) : (
+                      <RadioGroup 
+                        defaultValue={r.status} 
+                        className="flex items-center gap-4"
+                        onValueChange={() => toast.info(`Cập nhật: ${r.studentName}`)}
+                      >
+                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
+                          <RadioGroupItem value="present" id={`p-${r.studentId}`} className="h-4 w-4 text-admin" />
+                          <Label htmlFor={`p-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Có mặt</Label>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
+                          <RadioGroupItem value="absent_excused" id={`ae-${r.studentId}`} className="h-4 w-4 text-status-warning" />
+                          <Label htmlFor={`ae-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Vắng CP</Label>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
+                          <RadioGroupItem value="absent_unexcused" id={`au-${r.studentId}`} className="h-4 w-4 text-destructive" />
+                          <Label htmlFor={`au-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Vắng KP</Label>
+                        </div>
+                      </RadioGroup>
+                    )}
+
+                    {!readonly && (
+                      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-admin hover:bg-admin/5">
+                           <Phone className="h-3.5 w-3.5" />
+                         </Button>
+                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-green-600 hover:bg-green-50">
+                           <MessageCircle className="h-3.5 w-3.5" />
+                         </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {!readonly && attendance && filteredAttendance.length > 0 && (
+                <div className="pt-4 flex justify-center">
+                  <Button 
+                    className="bg-admin hover:bg-admin/90 h-10 px-10 rounded-full font-bold shadow-lg shadow-admin/20 transition-all hover:scale-[1.02]" 
+                    onClick={() => toast.success("Đã xác nhận điểm danh!")}
+                  >
+                    Xác nhận hoàn tất điểm danh
+                  </Button>
+                </div>
+              )}
+
+              {filteredAttendance.length === 0 && (
+                <div className="text-center py-12 bg-white rounded-2xl border border-dashed">
+                  <p className="text-muted-foreground text-sm italic">Chưa có dữ liệu học sinh</p>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="evaluation" className="mt-4">
