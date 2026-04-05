@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -142,19 +142,55 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="lessons">
+          <TabsContent value="lessons" className="space-y-4">
+            {rolePrefix === "/admin" && (
+              <div className="flex justify-end">
+                <Button size="sm" onClick={() => toast.info("Tính năng thêm bài giảng (demo)")}>
+                  <Plus className="mr-2 h-4 w-4" />Thêm bài giảng
+                </Button>
+              </div>
+            )}
             {sessionLessons.length > 0 ? sessionLessons.map((lesson) => (
-              <Card key={lesson.id} className="cursor-pointer hover:shadow-md" onClick={() => navigate(`${rolePrefix}/classes/${classId}/lesson/${lesson.id}`)}>
-                <CardContent className="p-4">
-                  <h3 className="font-bold">{lesson.title}</h3>
-                  <p className="text-sm text-muted-foreground">{lesson.description}</p>
-                  <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary">{lesson.videos.length} video</Badge>
-                    <Badge variant="secondary">{lesson.attachments.length} tài liệu</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            )) : <p className="text-muted-foreground">Chưa có bài giảng cho buổi này</p>}
+              <div key={lesson.id} className="group relative">
+                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate(`${rolePrefix}/classes/${classId}/lesson/${lesson.id}`)}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h3 className="font-bold">{lesson.title}</h3>
+                      <p className="text-sm text-muted-foreground">{lesson.description}</p>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="secondary">{lesson.videos.length} video</Badge>
+                        <Badge variant="secondary">{lesson.attachments.length} tài liệu</Badge>
+                        <Badge className={lesson.status === "published" ? "bg-status-success" : "bg-status-warning"}>
+                          {lesson.status === "published" ? "Đã xuất bản" : "Nháp"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                {rolePrefix === "/admin" && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/admin/lessons/${lesson.id}`);
+                    }}
+                  >
+                    Cấu hình
+                  </Button>
+                )}
+              </div>
+            )) : (
+              <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                <p className="text-muted-foreground mb-4">Chưa có bài giảng cho buổi này</p>
+                {rolePrefix === "/admin" && (
+                  <Button size="sm" variant="outline" onClick={() => toast.info("Gán bài giảng cho tiết học (demo)")}>
+                    Gán bài giảng có sẵn
+                  </Button>
+                )}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="assignments">

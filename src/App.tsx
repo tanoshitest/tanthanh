@@ -12,11 +12,8 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import AdminClasses from "./pages/admin/AdminClasses";
 import AdminClassDetail from "./pages/admin/AdminClassDetail";
-import AdminLessons from "./pages/admin/AdminLessons";
-import AdminLessonDetail from "./pages/admin/AdminLessonDetail";
+import AdminReports from "./pages/admin/AdminReports";
 import AdminAssignments from "./pages/admin/AdminAssignments";
-import AdminTuition from "./pages/admin/AdminTuition";
-import AdminPayroll from "./pages/admin/AdminPayroll";
 import AdminSchedule from "./pages/admin/AdminSchedule";
 import AdminCommunity from "./pages/admin/AdminCommunity";
 import AdminLibrary from "./pages/admin/AdminLibrary";
@@ -55,11 +52,8 @@ const App = () => (
             <Route path="classes" element={<AdminClasses />} />
             <Route path="classes/:id" element={<AdminClassDetail />} />
             <Route path="classes/:id/lesson/:lid" element={<LessonDetailPage />} />
-            <Route path="lessons" element={<AdminLessons />} />
-            <Route path="lessons/:id" element={<AdminLessonDetail />} />
+            <Route path="reports" element={<AdminReports />} />
             <Route path="assignments" element={<AdminAssignments />} />
-            <Route path="tuition" element={<AdminTuition />} />
-            <Route path="payroll" element={<AdminPayroll />} />
             <Route path="schedule" element={<AdminSchedule />} />
             <Route path="community" element={<AdminCommunity />} />
             <Route path="library" element={<AdminLibrary />} />

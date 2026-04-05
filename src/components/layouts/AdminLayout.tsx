@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Shield, LayoutDashboard, Users, BookOpen, FileText, ClipboardList, DollarSign, Clock, Calendar, MessageSquare, Library, Settings, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Users, BookOpen, FileText, ClipboardList, DollarSign, Clock, Calendar, MessageSquare, Library, Settings, LogOut, BarChart3 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
@@ -13,10 +13,8 @@ const items = [
   { title: "Tổng quan", url: "/admin", icon: LayoutDashboard, end: true },
   { title: "Quản lý User", url: "/admin/users", icon: Users },
   { title: "Quản lý lớp học", url: "/admin/classes", icon: BookOpen },
-  { title: "Bài giảng", url: "/admin/lessons", icon: FileText },
   { title: "Bài tập & Luyện đề", url: "/admin/assignments", icon: ClipboardList },
-  { title: "Quản lý học phí", url: "/admin/tuition", icon: DollarSign },
-  { title: "Chấm công & Lương", url: "/admin/payroll", icon: Clock },
+  { title: "Báo cáo", url: "/admin/reports", icon: BarChart3 },
   { title: "Lịch dạy", url: "/admin/schedule", icon: Calendar },
   { title: "Cộng đồng", url: "/admin/community", icon: MessageSquare },
   { title: "Thư viện tài liệu", url: "/admin/library", icon: Library },
