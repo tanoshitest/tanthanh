@@ -397,79 +397,80 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
                       </CardHeader>
                       <CardContent className="p-0">
                         <div className="divide-y divide-muted/50">
-                          {filteredAssignments.find(fa => fa.id === assgn.id)?.submissions.map((sub) => (
-                            <div key={sub.id} className="p-4 hover:bg-muted/5 transition-colors">
-
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-10 w-10 rounded-full bg-admin/10 flex items-center justify-center text-xs font-bold text-admin border border-admin/20">
-                                    {sub.studentName.charAt(0)}
+                          {filteredAssignments.find(fa => fa.id === assgn.id)?.submissions?.length ? (
+                            filteredAssignments.find(fa => fa.id === assgn.id)?.submissions.map((sub) => (
+                              <div key={sub.id} className="p-4 hover:bg-muted/5 transition-colors">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-admin/10 flex items-center justify-center text-xs font-bold text-admin border border-admin/20">
+                                      {sub.studentName.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-bold">{sub.studentName}</p>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {sub.status === "graded" ? `Đã nộp: ${sub.submittedAt}` : sub.status === "submitted" ? `Chờ chấm - Nộp lúc: ${sub.submittedAt}` : "Chưa nộp"}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <p className="text-sm font-bold">{sub.studentName}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                                      {sub.status === "graded" ? `Đã nộp: ${sub.submittedAt}` : sub.status === "submitted" ? `Chờ chấm - Nộp lúc: ${sub.submittedAt}` : "Chưa nộp"}
-                                    </p>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex flex-wrap items-center gap-3">
-                                  {/* Cột File bài làm - New */}
-                                  {(sub.status === "submitted" || sub.status === "graded") && sub.imageUrls?.[0] && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="h-8 gap-2 border-admin/30 text-admin hover:bg-admin/5 px-2"
-                                      onClick={() => setViewingImage(sub.imageUrls![0])}
-                                    >
-                                      <FileSearch className="h-4 w-4" />
-                                      <span className="text-[10px] font-bold">File bài làm</span>
-                                    </Button>
-                                  )}
-
-                                  {!readonly ? (
-                                    <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-xl border border-muted-foreground/10">
-                                      <div className="flex items-center gap-2">
-                                        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Điểm</Label>
-                                        <Input 
-                                          type="number" 
-                                          className="h-8 w-16 text-center text-xs font-bold border-muted-foreground/20 focus-visible:ring-admin" 
-                                          defaultValue={sub.score || 0}
-                                        />
-                                      </div>
-                                      <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                                        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nhận xét</Label>
-                                        <Input 
-                                          className="h-8 text-xs border-muted-foreground/20 focus-visible:ring-admin" 
-                                          placeholder="Nhập nhận xét..."
-                                          defaultValue={sub.feedback || ""}
-                                        />
-                                      </div>
+                                  
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    {/* Cột File bài làm - New */}
+                                    {(sub.status === "submitted" || sub.status === "graded") && sub.imageUrls?.[0] && (
                                       <Button 
+                                        variant="outline" 
                                         size="sm" 
-                                        className="h-8 bg-admin text-[11px] font-bold shadow-none hover:bg-admin/90"
-                                        onClick={() => toast.success(`Đã lưu điểm cho ${sub.studentName}`)}
+                                        className="h-8 gap-2 border-admin/30 text-admin hover:bg-admin/5 px-2"
+                                        onClick={() => setViewingImage(sub.imageUrls![0])}
                                       >
-                                        Lưu điểm
+                                        <FileSearch className="h-4 w-4" />
+                                        <span className="text-[10px] font-bold">File bài làm</span>
                                       </Button>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-3">
-                                      {sub.status === "graded" && (
-                                        <div className="text-right mr-2">
-                                          <p className="text-xs font-bold text-admin">{sub.score}/{assgn.totalPoints}đ</p>
-                                          <p className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">{sub.feedback}</p>
+                                    )}
+
+                                    {!readonly ? (
+                                      <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-xl border border-muted-foreground/10">
+                                        <div className="flex items-center gap-2">
+                                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Điểm</Label>
+                                          <Input 
+                                            type="number" 
+                                            className="h-8 w-16 text-center text-xs font-bold border-muted-foreground/20 focus-visible:ring-admin" 
+                                            defaultValue={sub.score || 0}
+                                          />
                                         </div>
-                                      )}
-                                      <Badge className={`${sub.status === "graded" ? "bg-status-success" : sub.status === "submitted" ? "bg-status-warning" : "bg-status-danger"} text-[10px] border-none shadow-sm h-6 px-3`}>
-                                        {sub.status === "graded" ? "Đã chấm" : sub.status === "submitted" ? "Chờ chấm" : "Chưa nộp"}
-                                      </Badge>
-                                    </div>
-                                  )}
+                                        <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nhận xét</Label>
+                                          <Input 
+                                            className="h-8 text-xs border-muted-foreground/20 focus-visible:ring-admin" 
+                                            placeholder="Nhập nhận xét..."
+                                            defaultValue={sub.feedback || ""}
+                                          />
+                                        </div>
+                                        <Button 
+                                          size="sm" 
+                                          className="h-8 bg-admin text-[11px] font-bold shadow-none hover:bg-admin/90"
+                                          onClick={() => toast.success(`Đã lưu điểm cho ${sub.studentName}`)}
+                                        >
+                                          Lưu điểm
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-3">
+                                        {sub.status === "graded" && (
+                                          <div className="text-right mr-2">
+                                            <p className="text-xs font-bold text-admin">{sub.score}/{assgn.totalPoints}đ</p>
+                                            <p className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">{sub.feedback}</p>
+                                          </div>
+                                        )}
+                                        <Badge className={`${sub.status === "graded" ? "bg-status-success" : sub.status === "submitted" ? "bg-status-warning" : "bg-status-danger"} text-[10px] border-none shadow-sm h-6 px-3`}>
+                                          {sub.status === "graded" ? "Đã chấm" : sub.status === "submitted" ? "Chờ chấm" : "Chưa nộp"}
+                                        </Badge>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )) : (
+                            ))
+                          ) : (
                             <p className="text-xs text-muted-foreground italic text-center py-8">Chưa có học sinh nào tham gia lớp này</p>
                           )}
                         </div>
