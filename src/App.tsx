@@ -76,6 +76,7 @@ const App = () => (
             <Route path="classes/:id" element={<ParentClassDetail />} />
             <Route path="classes/:id/lesson/:lid" element={<LessonDetailPage />} />
             <Route path="tuition" element={<ParentTuition />} />
+            <Route path="practice-exams" element={<ParentPracticeExams />} />
             <Route path="library" element={<ParentLibrary />} />
             <Route path="community" element={<ParentCommunity />} />
           </Route>

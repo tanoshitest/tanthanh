@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { Users, LayoutDashboard, BarChart3, BookOpen, DollarSign, FileText, Library, MessageSquare, LogOut } from "lucide-react";
+import { Users, LayoutDashboard, BarChart3, BookOpen, DollarSign, FileText, ClipboardList, Library, MessageSquare, LogOut } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
@@ -16,7 +16,8 @@ const items = [
   { title: "Báo cáo học tập", url: "/parent/report", icon: BarChart3 },
   { title: "Lớp học của tôi", url: "/parent/classes", icon: BookOpen },
   { title: "Học phí", url: "/parent/tuition", icon: DollarSign },
-  { title: "Thư viện kiến thức", url: "/parent/library", icon: Library },
+  { title: "Luyện đề thi", url: "/parent/practice-exams", icon: ClipboardList },
+  { title: "Kiến thức tham khảo", url: "/parent/library", icon: FileText },
   { title: "Cộng đồng", url: "/parent/community", icon: MessageSquare },
 ];
 
