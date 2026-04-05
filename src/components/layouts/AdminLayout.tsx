@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const items = [
-  { title: "Tổng quan", url: "/admin", icon: LayoutDashboard, end: true },
   { title: "Quản lý User", url: "/admin/users", icon: Users },
   { title: "Quản lý lớp học", url: "/admin/classes", icon: BookOpen },
   { title: "Bài tập & Luyện đề", url: "/admin/assignments", icon: ClipboardList },
@@ -43,7 +42,6 @@ function AdminSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      end={item.end}
                       className="hover:bg-accent/50"
                       activeClassName="bg-admin-light role-admin font-medium"
                     >

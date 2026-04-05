@@ -7,7 +7,6 @@ import LoginPage from "./pages/LoginPage";
 import AdminLayout from "./components/layouts/AdminLayout";
 import TeacherLayout from "./components/layouts/TeacherLayout";
 import ParentLayout from "./components/layouts/ParentLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import AdminClasses from "./pages/admin/AdminClasses";
@@ -46,7 +45,7 @@ const App = () => (
           <Route path="/" element={<LoginPage />} />
 
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
+            <Route index element={<Navigate to="/admin/users" replace />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="users/:type/:id" element={<AdminUserDetail />} />
             <Route path="classes" element={<AdminClasses />} />
