@@ -3,6 +3,7 @@ import { Users, LayoutDashboard, BarChart3, BookOpen, DollarSign, FileText, Clip
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
 import { useAuthStore } from "@/lib/store";
@@ -12,11 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { parentStudentAccounts } from "@/lib/mock-data";
 
 const items = [
-  { title: "Tổng quan", url: "/parent", icon: LayoutDashboard, end: true },
-  { title: "Báo cáo học tập", url: "/parent/report", icon: BarChart3 },
+  { title: "Báo cáo", url: "/parent/report", icon: BarChart3, end: true },
   { title: "Lớp học của tôi", url: "/parent/classes", icon: BookOpen },
-  { title: "Học phí", url: "/parent/tuition", icon: DollarSign },
-  { title: "Luyện đề thi", url: "/parent/practice-exams", icon: ClipboardList },
   { title: "Kiến thức tham khảo", url: "/parent/library", icon: FileText },
   { title: "Cộng đồng", url: "/parent/community", icon: MessageSquare },
 ];
@@ -39,9 +37,9 @@ function ParentSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink to={item.url} end={item.end} className="hover:bg-accent/50" activeClassName="bg-parent-light role-parent font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -51,6 +49,7 @@ function ParentSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }

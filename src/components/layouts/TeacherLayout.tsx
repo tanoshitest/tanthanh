@@ -3,6 +3,7 @@ import { GraduationCap, BookOpen, Clock, Calendar, MessageSquare, LogOut } from 
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
 import { useAuthStore } from "@/lib/store";
@@ -27,16 +28,16 @@ function TeacherSidebar() {
           {!collapsed && (
             <SidebarGroupLabel className="flex items-center gap-2 px-3 py-4">
               <GraduationCap className="h-5 w-5 role-teacher" />
-              <span className="font-bold text-base">Giáo viên</span>
+              <span className="font-bold text-base uppercase tracking-wider">Giáo viên</span>
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink to={item.url} className="hover:bg-accent/50" activeClassName="bg-teacher-light role-teacher font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -46,6 +47,7 @@ function TeacherSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }

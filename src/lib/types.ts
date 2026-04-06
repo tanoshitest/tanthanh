@@ -5,6 +5,7 @@ export type FeeStatus = "paid" | "pending" | "overdue";
 export type SessionStatus = "completed" | "upcoming" | "cancelled";
 export type LessonStatus = "published" | "draft";
 export type SubmissionStatus = "graded" | "submitted" | "not_submitted";
+export type ClassCategory = "kem" | "luyen-thi" | "dai-tra" | "chuyen" | "online";
 
 export interface Student {
   id: string;
@@ -46,6 +47,7 @@ export interface ClassInfo {
   subject: string;
   grade: number;
   level: string;
+  category: ClassCategory;
   teacherId: string;
   assistantId: string | null;
   studentCount: number;
@@ -73,11 +75,13 @@ export interface Quiz {
   question: string;
   options: string[];
   correctAnswer: number;
+  passScore?: number; // Added to block playback until correct
 }
 
 export interface VideoSegment {
   id: string;
-  timestamp: number; // in seconds
+  startTime: number; // Renamed from timestamp
+  endTime: number;   // Added
   label: string;
 }
 

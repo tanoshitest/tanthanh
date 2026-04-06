@@ -1,3 +1,5 @@
+import { ClassInfo } from "./types";
+
 export const adminUser = { id: "admin-001", name: "Nguyễn Văn Admin", email: "admin@trungtamabc.vn", role: "admin" as const, phone: "0901234567" };
 
 export const mainTeachers = [
@@ -31,17 +33,19 @@ export const parentStudentAccounts = [
   ]}
 ];
 
-export const classes = [
-  { id: "class-001", name: "Lớp 9A - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", teacherId: "gv-001", assistantId: "gv-003", studentCount: 35, maxStudents: 40, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890" }] },
-  { id: "class-002", name: "Lớp 9B - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", teacherId: "gv-001", assistantId: "gv-003", studentCount: 24, maxStudents: 30, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321" }] },
-  { id: "class-003", name: "Lớp 7 - Văn Trung cấp", subject: "Văn", grade: 7, level: "intermediate", teacherId: "gv-001", assistantId: "gv-003", studentCount: 28, maxStudents: 35, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }, { day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
-  { id: "class-004", name: "Lớp 6 - Văn Sơ cấp", subject: "Văn", grade: 6, level: "beginner", teacherId: "gv-001", assistantId: "gv-003", studentCount: 20, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
-  { id: "class-005", name: "Lớp 9A - Toán Cao cấp", subject: "Toán", grade: 9, level: "advanced", teacherId: "gv-002", assistantId: "gv-004", studentCount: 32, maxStudents: 35, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1111222233" }] },
-  { id: "class-006", name: "Lớp 9B - Toán Trung cấp", subject: "Toán", grade: 9, level: "intermediate", teacherId: "gv-002", assistantId: "gv-004", studentCount: 30, maxStudents: 35, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/4444555566" }] },
-  { id: "class-007", name: "Lớp 7 - Toán Trung cấp", subject: "Toán", grade: 7, level: "intermediate", teacherId: "gv-005", assistantId: "gv-004", studentCount: 25, maxStudents: 30, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }] },
-  { id: "class-008", name: "Lớp 8 - Toán Trung cấp", subject: "Toán", grade: 8, level: "intermediate", teacherId: "gv-002", assistantId: "gv-004", studentCount: 22, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
-  { id: "class-009", name: "Lớp 6 - Toán Sơ cấp", subject: "Toán", grade: 6, level: "beginner", teacherId: "gv-005", assistantId: "gv-004", studentCount: 18, maxStudents: 25, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
-  { id: "class-010", name: "Lớp 8 - Văn Trung cấp", subject: "Văn", grade: 8, level: "intermediate", teacherId: "gv-001", assistantId: "gv-003", studentCount: 26, maxStudents: 30, schedule: [{ day: "Chủ nhật", time: "09:00-11:00", type: "offline" }] }
+export const classes: ClassInfo[] = [
+  { id: "class-001", name: "Lớp 9A - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 35, maxStudents: 40, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890" }] },
+  { id: "class-002", name: "Lớp 9B - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 24, maxStudents: 30, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321" }] },
+  { id: "class-003", name: "Lớp 7 - Văn Trung cấp", subject: "Văn", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 28, maxStudents: 35, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }, { day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-004", name: "Lớp 6 - Văn Sơ cấp", subject: "Văn", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 20, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
+  { id: "class-005", name: "Lớp 9A - Toán Cao cấp", subject: "Toán", grade: 9, level: "advanced", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 32, maxStudents: 35, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1111222233" }] },
+  { id: "class-006", name: "Lớp 9B - Toán Trung cấp", subject: "Toán", grade: 9, level: "intermediate", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 30, maxStudents: 35, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/4444555566" }] },
+  { id: "class-007", name: "Lớp 7 - Toán Trung cấp", subject: "Toán", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 25, maxStudents: 30, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }] },
+  { id: "class-008", name: "Lớp 8 - Toán Trung cấp", subject: "Toán", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-002", assistantId: "gv-004", studentCount: 22, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-009", name: "Lớp 6 - Toán Sơ cấp", subject: "Toán", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 18, maxStudents: 25, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
+  { id: "class-010", name: "Lớp 8 - Văn Trung cấp", subject: "Văn", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 26, maxStudents: 30, schedule: [{ day: "Chủ nhật", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-011", name: "Kèm 1-1 Gia Bảo", subject: "Toán", grade: 8, level: "intermediate", category: "kem", teacherId: "gv-002", assistantId: null, studentCount: 1, maxStudents: 2, schedule: [{ day: "Thứ 5", time: "16:00-17:30", type: "offline" }] },
+  { id: "class-012", name: "Lớp Văn Online 9", subject: "Văn", grade: 9, level: "intermediate", category: "online", teacherId: "gv-001", assistantId: "gv-003", studentCount: 15, maxStudents: 50, schedule: [{ day: "Thứ 7", time: "20:00-21:30", type: "online", zoomLink: "https://zoom.us/j/online123" }] }
 ];
 
 export const sessions = [
@@ -156,7 +160,7 @@ export const lessons = [
     id: "lesson-002", classId: "class-001", title: "Nghị luận xã hội: Lòng dũng cảm",
     description: "Hướng dẫn viết NLXH", order: 2, sessionIds: ["s-003", "s-004"],
     videos: [{ id: "v-004", title: "Cách lập dàn ý NLXH", url: "https://www.w3schools.com/html/mov_bbb.mp4", duration: 1800, quizzes: [
-      { id: "q-005", timestamp: 5, question: "Bước đầu tiên khi viết NLXH?", options: ["Viết mở bài", "Lập dàn ý", "Tìm dẫn chứng", "Viết kết bài"], correctAnswer: 1 }
+      { id: "q-005", timestamp: 5, question: "Bước đầu tiên khi viết NLXH?", options: ["Viết mở bài", "Lập dàn ý", "Tìm dẫn chứng", "Viết kết bài"], correctAnswer: 1, passScore: 1 }
     ]}],
     attachments: [{ id: "att-003", name: "Dàn ý mẫu.docx", size: "150 KB" }],
     summaryQuiz: { questions: [
@@ -175,16 +179,16 @@ export const lessons = [
       duration: 3000, 
       quizzes: [],
       segments: [
-        { id: "seg-1", timestamp: 0, label: "00:00 - Giới thiệu cấu trúc đoạn văn 200 chữ" },
-        { id: "seg-2", timestamp: 300, label: "05:00 - Phân tích yêu cầu đề bài (Key terms)" },
-        { id: "seg-3", timestamp: 600, label: "10:00 - Cách viết mở đoạn ấn tượng" },
-        { id: "seg-4", timestamp: 900, label: "15:00 - Triển khai luận điểm 1: Nội dung" },
-        { id: "seg-5", timestamp: 1200, label: "20:00 - Triển khai luận điểm 2: Nghệ thuật" },
-        { id: "seg-6", timestamp: 1500, label: "25:00 - Cách trích dẫn thơ/văn bản hiệu quả" },
-        { id: "seg-7", timestamp: 1800, label: "30:00 - Liên hệ thực tế và mở rộng vấn đề" },
-        { id: "seg-8", timestamp: 2100, label: "35:00 - Các lỗi diễn đạt thường gặp" },
-        { id: "seg-9", timestamp: 2400, label: "40:00 - Kỹ thuật viết kết đoạn súc tích" },
-        { id: "seg-10", timestamp: 2700, label: "45:00 - Tổng kết và sửa bài mẫu thực tế" }
+        { id: "seg-1", startTime: 0, endTime: 300, label: "00:00 - Giới thiệu cấu trúc đoạn văn 200 chữ" },
+        { id: "seg-2", startTime: 300, endTime: 600, label: "05:00 - Phân tích yêu cầu đề bài (Key terms)" },
+        { id: "seg-3", startTime: 600, endTime: 900, label: "10:00 - Cách viết mở đoạn ấn tượng" },
+        { id: "seg-4", startTime: 900, endTime: 1200, label: "15:00 - Triển khai luận điểm 1: Nội dung" },
+        { id: "seg-5", startTime: 1200, endTime: 1500, label: "20:00 - Triển khai luận điểm 2: Nghệ thuật" },
+        { id: "seg-6", startTime: 1500, endTime: 1800, label: "25:00 - Cách trích dẫn thơ/văn bản hiệu quả" },
+        { id: "seg-7", startTime: 1800, endTime: 2100, label: "30:00 - Liên hệ thực tế và mở rộng vấn đề" },
+        { id: "seg-8", startTime: 2100, endTime: 2400, label: "35:00 - Các lỗi diễn đạt thường gặp" },
+        { id: "seg-9", startTime: 2400, endTime: 2700, label: "40:00 - Kỹ thuật viết kết đoạn súc tích" },
+        { id: "seg-10", startTime: 2700, endTime: 3000, label: "45:00 - Tổng kết và sửa bài mẫu thực tế" }
       ]
     }], 
     attachments: [{ id: "att-004", name: "Mẫu đoạn văn.pdf", size: "800 KB" }],
@@ -198,7 +202,7 @@ export const lessons = [
     id: "lesson-004", classId: "class-005", title: "Hệ phương trình bậc nhất hai ẩn",
     description: "Nắm vững phương pháp thế và cộng đại số", order: 1, sessionIds: ["s-012", "s-013"],
     videos: [{ id: "v-005", title: "Phương pháp thế", url: "https://www.w3schools.com/html/mov_bbb.mp4", duration: 1400, quizzes: [
-      { id: "q-006", timestamp: 5, question: "PP thế là gì?", options: ["Rút 1 ẩn rồi thế", "Cộng 2 PT", "Nhân hai vế", "Đổi dấu"], correctAnswer: 0 }
+      { id: "q-006", timestamp: 5, question: "PP thế là gì?", options: ["Rút 1 ẩn rồi thế", "Cộng 2 PT", "Nhân hai vế", "Đổi dấu"], correctAnswer: 0, passScore: 1 }
     ]}],
     attachments: [{ id: "att-005", name: "Bài tập tự luyện.pdf", size: "1.2 MB" }], 
     summaryQuiz: { questions: [
@@ -302,9 +306,22 @@ export const communityPosts = [
 ];
 
 export const library = [
-  { title: "Tổng hợp đề thi vào 10 Văn 2020-2024", subject: "Văn", grade: 9, fileSize: "5.2 MB", downloadCount: 156 },
-  { title: "Công thức Toán 9 - Tổng hợp trọn bộ", subject: "Toán", grade: 9, fileSize: "3.8 MB", downloadCount: 203 },
-  { title: "Bồi dưỡng HSG Toán 9 - Chuyên đề Hình học", subject: "Toán", grade: 9, fileSize: "4.1 MB", downloadCount: 89 },
-  { title: "Phương pháp viết đoạn văn nghị luận văn học", subject: "Văn", grade: 9, fileSize: "1.5 MB", downloadCount: 312 },
-  { title: "Đề thi thử Toán vào 10 - Quản Lộ", subject: "Toán", grade: 9, fileSize: "2.1 MB", downloadCount: 45 }
+  // Tài liệu bồi dưỡng học sinh giỏi
+  { title: "Bồi dưỡng HSG Toán 9 - Chuyên đề Hình học", subject: "Toán", grade: 9, category: "hsg", fileSize: "4.5 MB", downloadCount: 128 },
+  { title: "Tuyển tập đề thi HSG Văn 9 cấp Thành phố", subject: "Văn", grade: 9, category: "hsg", fileSize: "3.2 MB", downloadCount: 85 },
+  { title: "Nâng cao và phát triển Toán 8 - Tập 1", subject: "Toán", grade: 8, category: "hsg", fileSize: "5.8 MB", downloadCount: 156 },
+  { title: "Chuyên đề bồi dưỡng HSG Tiếng Anh 9", subject: "Anh", grade: 9, category: "hsg", fileSize: "4.1 MB", downloadCount: 92 },
+  
+  // Thư viện sách tham khảo
+  { title: "Từ điển Tiếng Việt dành cho học sinh", subject: "Văn", grade: null, category: "reference", fileSize: "12.5 MB", downloadCount: 450 },
+  { title: "Sổ tay công thức Toán học cấp 2", subject: "Toán", grade: null, category: "reference", fileSize: "2.8 MB", downloadCount: 890 },
+  { title: "100 câu chuyện quà tặng cuộc sống", subject: "Văn", grade: null, category: "reference", fileSize: "1.5 MB", downloadCount: 312 },
+  { title: "Atlas Địa lý Việt Nam (Bản mới nhất)", subject: "Địa", grade: null, category: "reference", fileSize: "8.4 MB", downloadCount: 215 },
+
+  // Tài liệu học tập
+  { title: "Tổng hợp đề thi vào 10 Văn 2020-2024", subject: "Văn", grade: 9, category: "learning", fileSize: "5.2 MB", downloadCount: 156 },
+  { title: "Công thức Toán 9 - Tổng hợp trọn bộ", subject: "Toán", grade: 9, category: "learning", fileSize: "3.8 MB", downloadCount: 203 },
+  { title: "Phương pháp viết đoạn văn nghị luận văn học", subject: "Văn", grade: 9, category: "learning", fileSize: "1.5 MB", downloadCount: 312 },
+  { title: "Đề thi thử Toán vào 10 - Quản Lộ", subject: "Toán", grade: 9, category: "learning", fileSize: "2.1 MB", downloadCount: 45 },
+  { title: "Đề cương ôn tập học kỳ 2 - Toán 7", subject: "Toán", grade: 7, category: "learning", fileSize: "1.1 MB", downloadCount: 78 }
 ];

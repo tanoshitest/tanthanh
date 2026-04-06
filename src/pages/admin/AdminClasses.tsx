@@ -26,12 +26,19 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-const levels = ["all", "beginner", "intermediate", "advanced"];
-const levelLabels: Record<string, string> = { all: "Tất cả", beginner: "Sơ cấp", intermediate: "Trung cấp", advanced: "Cao cấp" };
+const categories = ["all", "kem", "luyen-thi", "dai-tra", "chuyen", "online"];
+const categoryLabels: Record<string, string> = { 
+  all: "Tất cả", 
+  kem: "Lớp Kèm", 
+  "luyen-thi": "Lớp luyện thi", 
+  "dai-tra": "Lớp đại trà", 
+  chuyen: "Lớp chuyên", 
+  online: "Lớp online" 
+};
 
 const AdminClasses = () => {
   const [classList, setClassList] = useState(initialClasses);
-  const [level, setLevel] = useState("all");
+  const [category, setCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
   const allTeachers = [...mainTeachers, ...assistants];
@@ -40,6 +47,7 @@ const AdminClasses = () => {
   const [formData, setFormData] = useState({
     name: "",
     subject: "Văn",
+    category: "dai-tra" as const,
     level: "beginner",
     grade: "9",
     teacherId: mainTeachers[0].id,
@@ -61,6 +69,7 @@ const AdminClasses = () => {
       subject: formData.subject,
       grade: parseInt(formData.grade),
       level: formData.level as any,
+      category: formData.category as any,
       teacherId: formData.teacherId,
       assistantId: formData.assistantId,
       studentCount: 0,
@@ -74,7 +83,7 @@ const AdminClasses = () => {
     toast.success(`Đã tạo lớp ${newClass.name} thành công!`);
   };
 
-  const filtered = level === "all" ? classList : classList.filter((c) => c.level === level);
+  const filtered = category === "all" ? classList : classList.filter((c) => c.category === category);
 
   return (
     <div className="space-y-6">
@@ -102,26 +111,37 @@ const AdminClasses = () => {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs">Môn học</Label>
+                  <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Môn học</Label>
                   <Select value={formData.subject} onValueChange={(v) => setFormData({ ...formData, subject: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-muted/30 border-none h-9 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Văn">Văn</SelectItem>
-                      <SelectItem value="Toán">Toán</SelectItem>
-                      <SelectItem value="Anh">Anh</SelectItem>
+                      <SelectItem value="Văn" className="text-xs">Văn</SelectItem>
+                      <SelectItem value="Toán" className="text-xs">Toán</SelectItem>
+                      <SelectItem value="Anh" className="text-xs">Anh</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Cấp độ</Label>
+                  <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Cấp độ</Label>
                   <Select value={formData.level} onValueChange={(v) => setFormData({ ...formData, level: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-muted/30 border-none h-9 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Sơ cấp</SelectItem>
-                      <SelectItem value="intermediate">Trung cấp</SelectItem>
-                      <SelectItem value="advanced">Cao cấp</SelectItem>
+                      <SelectItem value="beginner" className="text-xs">Sơ cấp</SelectItem>
+                      <SelectItem value="intermediate" className="text-xs">Trung cấp</SelectItem>
+                      <SelectItem value="advanced" className="text-xs">Cao cấp</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 text-admin">
+                  <Label className="text-xs font-black uppercase tracking-wider">Loại lớp</Label>
+                  <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v as any })}>
+                    <SelectTrigger className="bg-admin/5 border-admin/20 border-2 h-9 text-xs font-black ring-0 focus:ring-0"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {categories.filter(c => c !== "all").map(c => (
+                        <SelectItem key={c} value={c} className="text-xs font-bold text-slate-700">{categoryLabels[c]}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -177,10 +197,10 @@ const AdminClasses = () => {
         </Dialog>
       </div>
 
-      <Tabs value={level} onValueChange={setLevel}>
-        <TabsList className="mb-4">
-          {levels.map((l) => (
-            <TabsTrigger key={l} value={l}>{levelLabels[l]}</TabsTrigger>
+      <Tabs value={category} onValueChange={setCategory}>
+        <TabsList className="bg-muted/30 p-1 flex-wrap h-auto mb-6">
+          {categories.map((c) => (
+            <TabsTrigger key={c} value={c} className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold h-8 px-4">{categoryLabels[c]}</TabsTrigger>
           ))}
         </TabsList>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

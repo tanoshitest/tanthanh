@@ -3,8 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { mainTeachers as initialTeachers, assistants as initialAssistants, accountants as initialAccountants, parentStudentAccounts as initialParents } from "@/lib/mock-data";
-import { Search, Plus, UserPlus, GraduationCap, Users } from "lucide-react";
+import { mainTeachers as initialTeachers, assistants as initialAssistants, accountants as initialAccountants, parentStudentAccounts as initialParents, classes as initialClasses } from "@/lib/mock-data";
+import { Search, Plus, UserPlus, GraduationCap, Users, BookOpen, Monitor, Award, Star, UserCheck, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +42,7 @@ const AdminUsers = () => {
   const [assistants, setAssistants] = useState(initialAssistants);
   const [accountants, setAccountants] = useState(initialAccountants);
   const [parents, setParents] = useState(initialParents);
+  const [classList, setClassList] = useState(initialClasses);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -268,98 +269,133 @@ const AdminUsers = () => {
         <Input placeholder="Tìm kiếm..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-11 border-none bg-muted/30 focus-visible:ring-admin" />
       </div>
 
-      <Tabs defaultValue="students">
-        <TabsList className="bg-muted/30 p-1">
-          <TabsTrigger value="students" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Học sinh ({students.length})</TabsTrigger>
-          <TabsTrigger value="teachers" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Giáo viên ({teachers.length})</TabsTrigger>
-          <TabsTrigger value="assistants" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Trợ giảng ({assistants.length})</TabsTrigger>
-          <TabsTrigger value="accountants" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Kế toán ({accountants.length})</TabsTrigger>
+      <Tabs defaultValue="dai-tra">
+        <TabsList className="bg-muted/30 p-1 flex-wrap h-auto">
+          <TabsTrigger value="kem" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp Kèm</TabsTrigger>
+          <TabsTrigger value="luyen-thi" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp luyện thi</TabsTrigger>
+          <TabsTrigger value="dai-tra" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp đại trà</TabsTrigger>
+          <TabsTrigger value="chuyen" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp chuyên</TabsTrigger>
+          <TabsTrigger value="online" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp online</TabsTrigger>
+          <TabsTrigger value="staff" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold bg-admin/5 text-admin">Nhân sự ({teachers.length + assistants.length + accountants.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="students" className="mt-4">
-          <div className="grid gap-3">
-            {students.filter((s) => s.name.toLowerCase().includes(search.toLowerCase())).map((s) => (
-              <Card key={s.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group" onClick={() => navigate(`/admin/users/student/${s.id}`)}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-admin/10 flex items-center justify-center text-admin font-bold">
-                      {s.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold group-hover:text-admin transition-colors">{s.name}</p>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <GraduationCap className="h-3 w-3" /> Lớp {s.grade} • {s.level} • PH: {s.parentName}
-                      </p>
-                    </div>
+        {(["kem", "luyen-thi", "dai-tra", "chuyen", "online"] as const).map((cat) => (
+          <TabsContent key={cat} value={cat} className="mt-6 space-y-6">
+            <div className="grid gap-6">
+              {classList.filter(c => c.category === cat).map(cls => (
+                <div key={cls.id} className="space-y-3">
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="h-2 w-2 rounded-full bg-admin animate-pulse" />
+                    <h3 className="font-black text-sm uppercase tracking-tight text-slate-700">{cls.name}</h3>
+                    <Badge variant="outline" className="text-[10px] h-5 bg-white border-muted/50">{cls.studentCount} học sinh</Badge>
                   </div>
-                  {statusBadge(s.status)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                  
+                  <div className="grid gap-3">
+                    {students
+                      .filter(s => s.classes.includes(cls.id))
+                      .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
+                      .map(s => (
+                        <Card key={s.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/student/${s.id}`)}>
+                          <CardContent className="flex items-center justify-between p-4">
+                            <div className="flex items-center gap-4">
+                              <div className="h-10 w-10 rounded-2xl bg-admin/10 flex items-center justify-center text-admin font-black text-lg rotate-3 group-hover:rotate-0 transition-transform">
+                                {s.name.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{s.name}</p>
+                                <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
+                                  <GraduationCap className="h-3.5 w-3.5 text-admin" /> Khối {s.grade} • {s.level.toUpperCase()} • PH: {s.parentName}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              {statusBadge(s.status)}
+                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-admin transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    {students.filter(s => s.classes.includes(cls.id)).length === 0 && (
+                      <p className="text-xs text-muted-foreground italic px-4 py-8 bg-muted/5 rounded-2xl border border-dashed text-center">Chưa có học sinh trong lớp này</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {classList.filter(c => c.category === cat).length === 0 && (
+                <div className="text-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed">
+                  <BookOpen className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+                  <p className="text-sm font-bold text-muted-foreground/60">Chưa có lớp học nào trong danh mục này</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        ))}
 
-        <TabsContent value="teachers" className="mt-4">
-          <div className="grid gap-3">
-            {teachers.filter((t) => t.name.toLowerCase().includes(search.toLowerCase())).map((t) => (
-              <Card key={t.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group" onClick={() => navigate(`/admin/users/teacher/${t.id}`)}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold group-hover:text-admin transition-colors">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">{t.subject} • {t.sessionsThisMonth} buổi/tháng</p>
-                    </div>
-                  </div>
-                  {statusBadge(t.status)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+        <TabsContent value="staff" className="mt-6">
+          <Tabs defaultValue="teachers_staff">
+            <TabsList className="bg-muted/30 p-1 mb-4 h-9">
+              <TabsTrigger value="teachers_staff" className="data-[state=active]:bg-white text-[10px] h-7">Giáo viên ({teachers.length})</TabsTrigger>
+              <TabsTrigger value="assistants_staff" className="data-[state=active]:bg-white text-[10px] h-7">Trợ giảng ({assistants.length})</TabsTrigger>
+              <TabsTrigger value="accountants_staff" className="data-[state=active]:bg-white text-[10px] h-7">Kế toán ({accountants.length})</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="assistants" className="mt-4">
-          <div className="grid gap-3">
-            {assistants.filter((a) => a.name.toLowerCase().includes(search.toLowerCase())).map((a) => (
-              <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group" onClick={() => navigate(`/admin/users/assistant/${a.id}`)}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
-                      {a.name.charAt(0)}
+            <TabsContent value="teachers_staff" className="space-y-3">
+              {teachers.filter((t) => t.name.toLowerCase().includes(search.toLowerCase())).map((t) => (
+                <Card key={t.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/teacher/${t.id}`)}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-lg">
+                        {t.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{t.name}</p>
+                        <p className="text-[11px] text-muted-foreground font-medium">{t.subject} • {t.sessionsThisMonth} buổi/tháng</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold group-hover:text-admin transition-colors">{a.name}</p>
-                      <p className="text-xs text-muted-foreground">{a.subject} • {a.hoursThisMonth}h/tháng</p>
-                    </div>
-                  </div>
-                  {statusBadge(a.status)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                    {statusBadge(t.status)}
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
 
-        <TabsContent value="accountants" className="mt-4">
-          <div className="grid gap-3">
-            {accountants.map((a) => (
-              <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group" onClick={() => navigate(`/admin/users/accountant/${a.id}`)}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
-                      {a.name.charAt(0)}
+            <TabsContent value="assistants_staff" className="space-y-3">
+              {assistants.filter((a) => a.name.toLowerCase().includes(search.toLowerCase())).map((a) => (
+                <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/assistant/${a.id}`)}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 font-black text-lg">
+                        {a.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{a.name}</p>
+                        <p className="text-[11px] text-muted-foreground font-medium">{a.subject} • {a.hoursThisMonth}h/tháng</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold group-hover:text-admin transition-colors">{a.name}</p>
-                      <p className="text-xs text-muted-foreground">{a.email}</p>
+                    {statusBadge(a.status)}
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="accountants_staff" className="space-y-3">
+              {accountants.filter((a) => a.name.toLowerCase().includes(search.toLowerCase())).map((a) => (
+                <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/accountant/${a.id}`)}>
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 font-black text-lg">
+                        {a.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{a.name}</p>
+                        <p className="text-[11px] text-muted-foreground font-medium">{a.email}</p>
+                      </div>
                     </div>
-                  </div>
-                  {statusBadge(a.status)}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    {statusBadge(a.status)}
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

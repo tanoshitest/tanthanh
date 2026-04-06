@@ -1,111 +1,70 @@
-import { library, practiceExams, classes } from "@/lib/mock-data";
+import { useState } from "react";
+import { library as initialLibrary } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, LayoutList, GraduationCap, Clock } from "lucide-react";
+import { 
+  Download, 
+  FileText, 
+  Trophy, 
+  Library as LibraryIcon, 
+  BookOpen,
+  Search,
+  LayoutList
+} from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const ParentLibrary = () => (
-  <div className="space-y-6">
-    <div className="flex items-center gap-3">
-      <div className="h-10 w-10 rounded-xl bg-parent/10 flex items-center justify-center">
-        <LayoutList className="h-6 w-6 text-parent" />
-      </div>
-      <h1 className="text-2xl font-bold">Thư viện kiến thức</h1>
-    </div>
+const ParentLibrary = () => {
+  const [libraryList] = useState(initialLibrary);
+  const [searchQuery, setSearchQuery] = useState("");
 
-    <Tabs defaultValue="exams" className="w-full">
-      <TabsList className="bg-muted/30 p-1 mb-6">
-        <TabsTrigger value="exams" className="px-8 py-2 data-[state=active]:bg-parent data-[state=active]:text-parent-foreground">
-          Luyện đề
-        </TabsTrigger>
-        <TabsTrigger value="documents" className="px-8 py-2 data-[state=active]:bg-parent data-[state=active]:text-parent-foreground">
-          Kiến thức tham khảo
-        </TabsTrigger>
-      </TabsList>
+  const filteredList = libraryList.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-      <TabsContent value="exams" className="space-y-4">
-        {practiceExams.length > 0 ? practiceExams.map((e) => {
-          const cls = classes.find((c) => c.id === e.classId);
-          return (
-            <Card key={e.id} className="border-none shadow-sm hover:shadow-md transition-all overflow-hidden group">
-              <CardContent className="p-0">
-                <div className="flex h-full min-h-[100px]">
-                  <div className={`w-2 ${e.status === "completed" ? "bg-status-success" : "bg-status-warning"}`} />
-                  <div className="flex-1 p-5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-bold text-lg">{e.title}</p>
-                          <Badge variant="outline" className={e.status === "completed" ? "border-status-success text-status-success" : "border-status-warning text-status-warning"}>
-                            {e.status === "completed" ? "Hoàn thành" : "Đang mở"}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1"><GraduationCap className="h-3.5 w-3.5" /> {cls?.name}</span>
-                          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {e.duration} phút</span>
-                          <span>{e.totalPoints} điểm tối đa</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        {e.status === "completed" ? (
-                          <Button variant="outline" className="border-parent text-parent hover:bg-parent/5">Xem lại bài</Button>
-                        ) : (
-                          <Button className="bg-parent text-parent-foreground">Bắt đầu làm bài</Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {e.rankings.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-muted/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2 tracking-wider">Bảng xếp hạng lớp</p>
-                        <div className="flex flex-wrap gap-4">
-                          {e.rankings.map((r) => (
-                            <div key={r.rank} className="flex items-center gap-2 bg-muted/20 px-3 py-1 rounded-full text-sm border border-muted-foreground/10">
-                              <span className={`font-bold ${r.rank === 1 ? "text-yellow-600" : "text-muted-foreground"}`}>#{r.rank}</span>
-                              <span className="font-medium">{r.studentName}</span>
-                              <span className="text-parent font-bold">{r.score}đ</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        }) : (
-          <div className="text-center py-20 bg-muted/10 rounded-3xl border-2 border-dashed">
-            <FileText className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-            <p className="text-muted-foreground font-medium">Hiện chưa có đề thi luyện tập nào</p>
-          </div>
-        )}
-      </TabsContent>
-
-      <TabsContent value="documents" className="space-y-4">
-        {library.map((item, i) => (
-          <Card key={i} className="border-none shadow-sm hover:shadow-md transition-all group overflow-hidden">
-            <CardContent className="flex items-center justify-between p-5">
+  const renderLibraryItems = (category: string) => {
+    const items = filteredList.filter(item => item.category === category);
+    if (items.length === 0) {
+      return (
+        <div className="text-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed border-muted/20 mt-4">
+          <FileText className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium italic">Không tìm thấy tài liệu nào</p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid gap-3 mt-4">
+        {items.map((item, i) => (
+          <Card key={i} className="group hover:shadow-md transition-all hover:-translate-y-0.5 border-none bg-white shadow-sm overflow-hidden">
+            <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-muted/30 flex items-center justify-center group-hover:bg-parent/10 transition-colors">
-                  <FileText className="h-6 w-6 text-muted-foreground group-hover:text-parent transition-colors" />
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all ${
+                  item.category === "hsg" ? "bg-amber-100 text-amber-600 group-hover:bg-amber-600" :
+                  item.category === "reference" ? "bg-parent/10 text-parent group-hover:bg-parent" :
+                  "bg-emerald-100 text-emerald-600 group-hover:bg-emerald-600"
+                } group-hover:text-white`}>
+                  {item.category === "hsg" ? <Trophy className="h-6 w-6" /> : 
+                   item.category === "reference" ? <LibraryIcon className="h-6 w-6" /> : 
+                   <BookOpen className="h-6 w-6" />}
                 </div>
                 <div>
-                  <p className="font-bold text-base mb-1">{item.title}</p>
-                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                    <Badge variant="secondary" className="bg-muted/50 text-[10px] font-bold">{item.subject}</Badge>
-                    {item.grade && <span className="flex items-center gap-1">• Lớp {item.grade}</span>}
-                    <span className="flex items-center gap-1">• {item.fileSize}</span>
+                  <p className="font-bold text-slate-800 mb-1 group-hover:text-parent transition-colors">{item.title}</p>
+                  <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                    <Badge variant="secondary" className="bg-muted/50 font-black h-5 px-2">{item.subject}</Badge>
+                    {item.grade && <span>Lớp {item.grade}</span>}
+                    <span className="h-1 w-1 rounded-full bg-muted-foreground/30"></span>
+                    <span>{item.fileSize}</span>
+                    <span className="h-1 w-1 rounded-full bg-muted-foreground/30"></span>
+                    <span className="italic normal-case font-medium">{item.downloadCount} lượt tải</span>
                   </div>
                 </div>
               </div>
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="rounded-full border-muted-foreground/20 hover:border-parent hover:text-parent hover:bg-parent/5 h-10 w-10"
+                className="h-10 w-10 rounded-full border-muted/20 text-muted-foreground hover:border-parent hover:text-parent transition-all shrink-0"
                 onClick={() => toast.success(`Đã tải xuống: ${item.title}`)}
               >
                 <Download className="h-5 w-5" />
@@ -113,9 +72,50 @@ const ParentLibrary = () => (
             </CardContent>
           </Card>
         ))}
-      </TabsContent>
-    </Tabs>
-  </div>
-);
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-parent/10 flex items-center justify-center">
+            <LayoutList className="h-6 w-6 text-parent" />
+          </div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Thư viện tài liệu</h1>
+        </div>
+        
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Tìm kiếm tài liệu..." 
+            className="pl-10 h-11 w-full md:w-[320px] rounded-full border-muted/30 focus-visible:ring-parent shadow-sm" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <Tabs defaultValue="hsg" className="w-full">
+        <TabsList className="bg-muted/30 p-1 mb-8 w-full md:w-auto h-auto rounded-2xl flex flex-wrap gap-1">
+          <TabsTrigger value="hsg" className="rounded-xl flex-1 md:flex-none py-3 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-amber-600 font-black text-xs uppercase tracking-tighter transition-all">
+            <Trophy className="h-4 w-4 mr-2" /> Bồi dưỡng HSG
+          </TabsTrigger>
+          <TabsTrigger value="reference" className="rounded-xl flex-1 md:flex-none py-3 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-parent font-black text-xs uppercase tracking-tighter transition-all">
+            <LibraryIcon className="h-4 w-4 mr-2" /> Sách tham khảo
+          </TabsTrigger>
+          <TabsTrigger value="learning" className="rounded-xl flex-1 md:flex-none py-3 px-6 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600 font-black text-xs uppercase tracking-tighter transition-all">
+            <BookOpen className="h-4 w-4 mr-2" /> Tài liệu học tập
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="hsg">{renderLibraryItems("hsg")}</TabsContent>
+        <TabsContent value="reference">{renderLibraryItems("reference")}</TabsContent>
+        <TabsContent value="learning">{renderLibraryItems("learning")}</TabsContent>
+      </Tabs>
+    </div>
+  );
+};
 
 export default ParentLibrary;

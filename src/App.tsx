@@ -26,8 +26,6 @@ import ParentDashboard from "./pages/parent/ParentDashboard";
 import ParentReport from "./pages/parent/ParentReport";
 import ParentClasses from "./pages/parent/ParentClasses";
 import ParentClassDetail from "./pages/parent/ParentClassDetail";
-import ParentTuition from "./pages/parent/ParentTuition";
-import ParentPracticeExams from "./pages/parent/ParentPracticeExams";
 import ParentLibrary from "./pages/parent/ParentLibrary";
 import ParentCommunity from "./pages/parent/ParentCommunity";
 import LessonDetailPage from "./components/shared/LessonDetailPage";
@@ -70,13 +68,11 @@ const App = () => (
           </Route>
 
           <Route path="/parent" element={<ParentLayout />}>
-            <Route index element={<ParentDashboard />} />
+            <Route index element={<Navigate to="/parent/report" replace />} />
             <Route path="report" element={<ParentReport />} />
             <Route path="classes" element={<ParentClasses />} />
             <Route path="classes/:id" element={<ParentClassDetail />} />
             <Route path="classes/:id/lesson/:lid" element={<LessonDetailPage />} />
-            <Route path="tuition" element={<ParentTuition />} />
-            <Route path="practice-exams" element={<ParentPracticeExams />} />
             <Route path="library" element={<ParentLibrary />} />
             <Route path="community" element={<ParentCommunity />} />
           </Route>

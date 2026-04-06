@@ -3,6 +3,7 @@ import { Shield, LayoutDashboard, Users, BookOpen, FileText, ClipboardList, Doll
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavLink } from "@/components/NavLink";
 import { useAuthStore } from "@/lib/store";
@@ -38,13 +39,13 @@ function AdminSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
                       className="hover:bg-accent/50"
                       activeClassName="bg-admin-light role-admin font-medium"
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="mr-2 h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -54,6 +55,7 @@ function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }

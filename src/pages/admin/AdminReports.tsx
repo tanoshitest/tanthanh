@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { tuitionFees, teacherPayroll, classes, sessions, sessionAttendance, sessionEvaluations } from "@/lib/mock-data";
+import { tuitionFees, teacherPayroll, classes, sessions, sessionAttendance, sessionEvaluations, parentStudentAccounts } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,14 +7,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   DollarSign, AlertTriangle, CheckCircle, MessageCircle, BarChart3, 
-  Clock, UserCheck, GraduationCap, Calendar, Filter, Users
+  Clock, UserCheck, GraduationCap, Calendar, Filter, Users,
+  Search, Download, FileText, ChevronRight, XCircle, AlertCircle, TrendingUp
 } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Cell } from "recharts";
 
 const AdminReports = () => {
   const [selectedClass, setSelectedClass] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("01/2025");
+  const [selectedTest, setSelectedTest] = useState("all");
+  const [selectedGradeRange, setSelectedGradeRange] = useState("all");
 
   // Filter Logic
   const filteredTuition = tuitionFees.filter(f => 
@@ -110,18 +116,15 @@ const AdminReports = () => {
       </div>
 
       <Tabs defaultValue="payroll" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-[800px] mb-6">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 max-w-[600px] mb-6">
           <TabsTrigger value="payroll" className="flex items-center gap-2">
             <Clock className="h-4 w-4" /> Chấm công
           </TabsTrigger>
           <TabsTrigger value="tuition" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" /> Học phí
+            <DollarSign className="h-4 w-4" /> Học phí
           </TabsTrigger>
-          <TabsTrigger value="attendance" className="flex items-center gap-2">
-            <UserCheck className="h-4 w-4" /> Chuyên cần
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" /> Kết quả đào tạo
+          <TabsTrigger value="detailed-reports" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" /> Báo cáo
           </TabsTrigger>
         </TabsList>
 
@@ -197,106 +200,220 @@ const AdminReports = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="attendance" className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Card><CardContent className="p-4 text-center">
-              <Users className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <p className="text-xs text-muted-foreground">Sĩ số bình quân</p>
-              <p className="text-xl font-bold">{attendanceStats.total > 0 ? (attendanceStats.total / filteredAttendance.length).toFixed(0) : 0}</p>
-            </CardContent></Card>
-            <Card className="bg-status-success/5"><CardContent className="p-4 text-center">
-              <CheckCircle className="h-5 w-5 mx-auto mb-2 text-status-success" />
-              <p className="text-xs text-muted-foreground">Tỉ lệ chuyên cần</p>
-              <p className="text-xl font-bold text-status-success">{attendanceRate.toFixed(1)}%</p>
-            </CardContent></Card>
-            <Card className="bg-status-warning/5"><CardContent className="p-4 text-center">
-              <Clock className="h-5 w-5 mx-auto mb-2 text-status-warning" />
-              <p className="text-xs text-muted-foreground">Tỉ lệ đi trễ</p>
-              <p className="text-xl font-bold text-status-warning">{attendanceStats.total > 0 ? ((attendanceStats.late / attendanceStats.total) * 100).toFixed(1) : 0}%</p>
-            </CardContent></Card>
-            <Card className="bg-destructive/5"><CardContent className="p-4 text-center">
-              <AlertTriangle className="h-5 w-5 mx-auto mb-2 text-destructive" />
-              <p className="text-xs text-muted-foreground">Tỉ lệ nghỉ học</p>
-              <p className="text-xl font-bold text-destructive">{attendanceStats.total > 0 ? ((attendanceStats.absent / attendanceStats.total) * 100).toFixed(1) : 0}%</p>
-            </CardContent></Card>
-          </div>
-          <Card>
-            <CardHeader><CardTitle className="text-lg">Chi tiết chuyên cần theo buổi</CardTitle></CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredAttendance.map((a, i) => {
-                  const s = sessions.find(sess => sess.id === a.sessionId);
-                  return (
-                    <div key={i} className="flex items-center justify-between p-3 rounded border bg-card">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-sm">{s?.date} — {s?.topic}</p>
-                          <p className="text-xs text-muted-foreground">{classes.find(c => c.id === s?.classId)?.name}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4 text-xs font-medium">
-                        <span className="text-status-success">Đủ: {a.records.filter(r => r.status === "present").length}</span>
-                        <span className="text-status-warning">Trễ: {a.records.filter(r => r.status === "late").length}</span>
-                        <span className="text-destructive">Vắng: {a.records.filter(r => r.status.includes("absent")).length}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <TabsContent value="detailed-reports" className="space-y-4">
+          <Tabs defaultValue="performance" className="w-full">
+            <TabsList className="bg-muted/20 p-1 mb-6 w-fit h-auto">
+              <TabsTrigger value="performance" className="text-[10px] px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">Kết quả đào tạo</TabsTrigger>
+              <TabsTrigger value="attendance" className="text-[10px] px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">Chuyên cần</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="performance" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Phân tích kỹ năng trung bình</CardTitle></CardHeader>
-              <CardContent className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={performanceChartData} layout="vertical" margin={{ left: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                    <XAxis type="number" domain={[0, 10]} hide />
-                    <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
-                    <Tooltip cursor={{ fill: 'transparent' }} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                      {performanceChartData.map((_entry, index) => (
-                        <Cell key={`cell-${index}`} fill={`hsl(217, 91%, ${60 - index * 5}%)`} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Ghi chú & Đánh giá giáo viên</CardTitle></CardHeader>
-              <CardContent className="space-y-3 max-h-[300px] overflow-auto pr-2">
-                {filteredEvaluations.map((ev, i) => (
-                  <div key={i} className="p-3 rounded border bg-muted/20 text-sm">
-                    <div className="flex justify-between items-center mb-1">
-                      <p className="font-bold">{sessionAttendance.flatMap(sa => sa.records).find(r => r.studentId === ev.studentId)?.studentName}</p>
-                      <Badge variant="outline" className="text-[10px] h-4">Buổi: {sessions.find(s => s.id === ev.sessionId)?.date}</Badge>
+            <TabsContent value="performance" className="mt-0 space-y-4">
+              <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border shadow-sm mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-muted-foreground whitespace-nowrap uppercase">Bài kiểm tra:</span>
+                  <Select value={selectedTest} onValueChange={setSelectedTest}>
+                    <SelectTrigger className="w-[220px] h-8 text-[11px] font-bold">
+                      <SelectValue placeholder="Chọn bài kiểm tra" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs font-bold">Tất cả bài tập & Đề thi</SelectItem>
+                      <SelectItem value="bt-001" className="text-xs">Bài tập: Phân tích Lặng lẽ Sa Pa</SelectItem>
+                      <SelectItem value="de-001" className="text-xs">Đề thi thử: Giữa kỳ 1 - Văn 9</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-muted-foreground whitespace-nowrap uppercase">Xếp loại:</span>
+                  <Select value={selectedGradeRange} onValueChange={setSelectedGradeRange}>
+                    <SelectTrigger className="w-[140px] h-8 text-[11px] font-bold">
+                      <SelectValue placeholder="Tất cả xếp loại" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Tất cả xếp loại</SelectItem>
+                      <SelectItem value="gioi" className="text-xs text-green-600 font-bold">Giỏi (8.0 - 10)</SelectItem>
+                      <SelectItem value="kha" className="text-xs text-blue-600 font-bold">Khá (6.5 - 7.9)</SelectItem>
+                      <SelectItem value="tb" className="text-xs text-yellow-600 font-bold">T.Bình (5.0 - 6.4)</SelectItem>
+                      <SelectItem value="yeu" className="text-xs text-red-600 font-bold">Yếu {"(< 5.0)"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="ml-auto">
+                   <Button size="sm" variant="outline" className="h-8 border-admin text-admin hover:bg-admin/5 font-bold text-[11px]">
+                     <Download className="mr-2 h-3.5 w-3.5" /> Xuất Excel
+                   </Button>
+                </div>
+              </div>
+
+              <Card className="border-none shadow-sm overflow-hidden rounded-2xl border border-muted/20">
+                <Table>
+                  <TableHeader className="bg-muted/30">
+                    <TableRow className="hover:bg-transparent border-b border-muted/50">
+                      <TableHead className="w-[60px] text-center font-black text-[10px] uppercase text-muted-foreground py-3">STT</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase text-muted-foreground py-3">Học sinh</TableHead>
+                      <TableHead className="text-center font-black text-[10px] uppercase text-muted-foreground py-3">Điểm số</TableHead>
+                      <TableHead className="text-center font-black text-[10px] uppercase text-muted-foreground py-3">Xếp loại</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase text-muted-foreground py-3">Nhận xét / Trạng thái</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[
+                      { id: 1, name: "Nguyễn Minh Khôi", score: 8.5, grade: "Giỏi", color: "bg-green-100 text-green-600", feedback: "Tốt, cần thêm dẫn chứng nghệ thuật." },
+                      { id: 2, name: "Trương Đình Phúc", score: 7.0, grade: "Khá", color: "bg-blue-100 text-blue-600", feedback: "Bài làm khá, cần chú ý cách trình bày." },
+                      { id: 3, name: "Lý Thanh Tâm", score: 9.0, grade: "Giỏi", color: "bg-green-100 text-green-600", feedback: "Lập luận sắc bén, súc tích." },
+                      { id: 4, name: "Hoàng Gia Bảo", score: 5.5, grade: "Trung bình", color: "bg-yellow-100 text-yellow-600", feedback: "Cần cố gắng hơn ở phần diễn đạt." }
+                    ]
+                    .filter(s => selectedGradeRange === "all" || (selectedGradeRange === "gioi" && s.score >= 8) || (selectedGradeRange === "kha" && s.score >= 6.5 && s.score < 8))
+                    .map((student, idx) => (
+                      <TableRow key={student.id} className="hover:bg-muted/5 transition-colors border-b border-muted/20 last:border-0 h-10">
+                        <TableCell className="text-center font-bold text-muted-foreground text-xs py-3">{idx + 1}</TableCell>
+                        <TableCell className="py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-admin/10 flex items-center justify-center text-admin font-black text-[10px]">
+                              {student.name.charAt(0)}
+                            </div>
+                            <span className="font-bold text-slate-700 text-xs">{student.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center py-3">
+                          <span className="text-xs font-black text-admin bg-admin/5 px-2 py-1 rounded-lg border border-admin/10">{student.score}đ</span>
+                        </TableCell>
+                        <TableCell className="text-center py-3">
+                          <Badge className={`${student.color} border-none shadow-none text-[10px] font-black uppercase px-2 py-0.5`}>
+                            {student.grade}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground italic py-3 max-w-[250px] truncate">
+                          {student.feedback}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+
+            </TabsContent>
+
+            <TabsContent value="attendance" className="mt-0">
+              <div className="grid gap-4 sm:grid-cols-4 mb-6">
+                <Card><CardContent className="p-4 text-center">
+                  <Users className="h-5 w-5 mx-auto mb-2 text-primary" />
+                  <p className="text-[10px] text-muted-foreground font-black uppercase">Sĩ số bình quân</p>
+                  <p className="text-xl font-black text-slate-800">{attendanceStats.total > 0 ? (attendanceStats.total / filteredAttendance.length).toFixed(0) : 0}</p>
+                </CardContent></Card>
+                <Card className="bg-emerald-50 border-emerald-100"><CardContent className="p-4 text-center">
+                  <CheckCircle className="h-5 w-5 mx-auto mb-2 text-emerald-600" />
+                  <p className="text-[10px] text-emerald-600/80 font-black uppercase">Tỉ lệ chuyên cần</p>
+                  <p className="text-xl font-black text-emerald-700">{attendanceRate.toFixed(1)}%</p>
+                </CardContent></Card>
+                <Card className="bg-amber-50 border-amber-100"><CardContent className="p-4 text-center">
+                  <Clock className="h-5 w-5 mx-auto mb-2 text-amber-600" />
+                  <p className="text-[10px] text-amber-600/80 font-black uppercase">Tỉ lệ đi trễ</p>
+                  <p className="text-xl font-black text-amber-700">{attendanceStats.total > 0 ? ((attendanceStats.late / attendanceStats.total) * 100).toFixed(1) : 0}%</p>
+                </CardContent></Card>
+                <Card className="bg-rose-50 border-rose-100"><CardContent className="p-4 text-center">
+                  <AlertTriangle className="h-5 w-5 mx-auto mb-2 text-rose-600" />
+                  <p className="text-[10px] text-rose-600/80 font-black uppercase">Tỉ lệ nghỉ học</p>
+                  <p className="text-xl font-black text-rose-700">{attendanceStats.total > 0 ? ((attendanceStats.absent / attendanceStats.total) * 100).toFixed(1) : 0}%</p>
+                </CardContent></Card>
+              </div>
+
+              {selectedClass === "all" ? (
+                <div className="text-center py-20 bg-muted/10 border-2 border-dashed rounded-3xl">
+                   <UserCheck className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                   <h3 className="text-lg font-black text-slate-700 uppercase tracking-tight">Vui lòng chọn một lớp học</h3>
+                   <p className="text-sm text-muted-foreground max-w-[320px] mx-auto font-medium">Để xem ma trận chuyên cần chi tiết, bạn cần chọn một lớp học cụ thể từ bộ lọc bên trên.</p>
+                </div>
+              ) : (
+                <Card className="border-none shadow-sm overflow-hidden bg-white rounded-2xl border border-muted/20">
+                  <CardHeader className="py-4 border-b bg-muted/5">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xs font-black uppercase tracking-tight flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-600" /> Thống kê chuyên cần chi tiết
+                      </CardTitle>
                     </div>
-                    <p className="italic text-muted-foreground">"{ev.comment}"</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-          <Card>
-            <CardHeader><CardTitle className="text-lg">Danh sách học sinh tiến bộ nhất</CardTitle></CardHeader>
-            <CardContent>
-               <div className="grid gap-4 sm:grid-cols-3">
-                  {filteredEvaluations.slice(0, 3).map((ev, i) => (
-                    <div key={i} className="flex flex-col items-center p-4 rounded-xl border bg-status-success/5 border-status-success/20">
-                      <div className="h-12 w-12 rounded-full bg-status-success/20 flex items-center justify-center text-status-success font-bold text-xl mb-2">#{i+1}</div>
-                      <p className="font-bold">{sessionAttendance.flatMap(sa => sa.records).find(r => r.studentId === ev.studentId)?.studentName}</p>
-                      <p className="text-xs text-muted-foreground">Điểm TB: {((Object.values(ev.criteria).reduce((a, b) => a + (b as number), 0)) / 6).toFixed(1)}</p>
-                    </div>
-                  ))}
-               </div>
-            </CardContent>
-          </Card>
+                  </CardHeader>
+                  <ScrollArea className="w-full whitespace-nowrap">
+                    <Table>
+                      <TableHeader className="bg-muted/30">
+                        <TableRow className="hover:bg-transparent border-b border-muted/50">
+                          <TableHead className="sticky left-0 bg-white z-20 w-[50px] text-center font-black text-[10px] uppercase text-muted-foreground py-3">STT</TableHead>
+                          <TableHead className="sticky left-[50px] bg-white z-20 min-w-[180px] font-black text-[10px] uppercase text-muted-foreground py-3 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-6">Học sinh</TableHead>
+                          <TableHead className="min-w-[100px] text-[10px] font-black uppercase py-3 text-center bg-emerald-50/50">Có mặt %</TableHead>
+                          {sessions.filter(s => s.classId === selectedClass).map(s => (
+                            <TableHead key={s.id} className="min-w-[80px] font-black text-[9px] uppercase text-muted-foreground text-center border-l py-3">
+                               <div className="flex flex-col">
+                                 <span>{s.date.split("-").slice(1).reverse().join("/")}</span>
+                                 <span className="text-[7px] opacity-60 font-medium">BUỔI {s.id.split('-').pop()}</span>
+                               </div>
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {parentStudentAccounts.flatMap(p => p.children).filter(c => c.classes.includes(selectedClass)).map((student, studentIdx) => {
+                          let presentCount = 0;
+                          let sessionsWithData = 0;
+
+                          const studentSessions = sessions.filter(s => s.classId === selectedClass);
+                          const studentRow = studentSessions.map(sess => {
+                            const sessAtt = sessionAttendance.find(a => a.sessionId === sess.id);
+                            const record = sessAtt?.records.find(r => (r as any).studentId === student.id);
+                            
+                            if (record) {
+                              sessionsWithData++;
+                              if (record.status === "present" || record.status === "late") presentCount++;
+                            }
+                            return record || null;
+                          });
+
+                          const attendancePercent = sessionsWithData > 0 ? Math.round((presentCount / sessionsWithData) * 100) : 0;
+
+                          return (
+                            <TableRow key={student.id} className="hover:bg-muted/5 transition-colors border-b border-muted/20 last:border-0 h-10">
+                              <TableCell className="sticky left-0 bg-white z-10 text-center font-bold text-[10px] text-muted-foreground py-3 whitespace-nowrap">
+                                {studentIdx + 1}
+                              </TableCell>
+                              <TableCell className="sticky left-[50px] bg-white z-10 py-3 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] px-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-7 w-7 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-black text-emerald-700">
+                                    {student.name.charAt(0)}
+                                  </div>
+                                  <span className="text-xs font-black text-slate-700">{student.name}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center py-3 bg-emerald-50/30">
+                                <Badge className={`${attendancePercent >= 90 ? "bg-emerald-500" : attendancePercent >= 70 ? "bg-amber-500" : "bg-destructive"} text-white border-none shadow-none text-[8px] font-black px-1.5 h-4`}>
+                                  {attendancePercent}%
+                                </Badge>
+                              </TableCell>
+                              {studentRow.map((record, i) => (
+                                <TableCell key={i} className="py-3 text-center border-l">
+                                  <div className="flex items-center justify-center">
+                                    {!record ? (
+                                      <span className="text-muted-foreground opacity-20">—</span>
+                                    ) : record.status === "present" ? (
+                                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                                    ) : (record.status === "late" || record.status === "absent_excused") ? (
+                                      <Clock className="h-4 w-4 text-amber-500" />
+                                    ) : (
+                                      <XCircle className="h-4 w-4 text-rose-500" />
+                                    )}
+                                  </div>
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

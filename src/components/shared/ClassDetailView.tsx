@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { 
   classes, sessions, sessionAttendance, sessionEvaluations, 
   lessons, assignments as initialAssignments, 
-  mainTeachers, assistants, parentStudentAccounts
+  mainTeachers, assistants, parentStudentAccounts,
+  practiceExams
 } from "@/lib/mock-data";
 import { useAuthStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,12 +18,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   ArrowLeft, CheckCircle, Clock, XCircle, AlertCircle, Calendar,
   Plus, ClipboardList, GraduationCap, FileText,
-  BookOpen, Info, FileSearch, Phone, MessageCircle, MoreHorizontal
+  BookOpen, Info, FileSearch, Phone, MessageCircle, MoreHorizontal,
+  Settings, Trash2, PlayCircle, Video, UserCheck, BarChart3, TrendingUp,
+  FileDown, Download
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -61,9 +65,46 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
 
   const classSessions = sessions.filter((s) => s.classId === classId).sort((a, b) => b.date.localeCompare(a.date));
   const [selectedSessionId, setSelectedSessionId] = useState(classSessions[0]?.id || "");
-  const [assignmentList, setAssignmentList] = useState(initialAssignments);
+  const [assignmentList, setAssignmentList] = useState(() => {
+    const saved = localStorage.getItem(`assignments_${classId}`);
+    return saved ? JSON.parse(saved) : initialAssignments;
+  });
+  const [localAttendance, setLocalAttendance] = useState(() => {
+    const saved = localStorage.getItem(`attendance_${classId}`);
+    return saved ? JSON.parse(saved) : sessionAttendance;
+  });
+  const [localEvals, setLocalEvals] = useState(() => {
+    const saved = localStorage.getItem(`evals_${classId}`);
+    return saved ? JSON.parse(saved) : sessionEvaluations;
+  });
+  const [localLessons, setLocalLessons] = useState(() => {
+    const saved = localStorage.getItem(`lessons_${classId}`);
+    return saved ? JSON.parse(saved) : lessons;
+  });
+
   const [isAddAssignmentOpen, setIsAddAssignmentOpen] = useState(false);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
+
+  // Challenge Config State
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editingQuiz, setEditingQuiz] = useState<any>(null);
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem(`assignments_${classId}`, JSON.stringify(assignmentList));
+  }, [assignmentList, classId]);
+
+  useEffect(() => {
+    localStorage.setItem(`attendance_${classId}`, JSON.stringify(localAttendance));
+  }, [localAttendance, classId]);
+
+  useEffect(() => {
+    localStorage.setItem(`evals_${classId}`, JSON.stringify(localEvals));
+  }, [localEvals, classId]);
+
+  useEffect(() => {
+    localStorage.setItem(`lessons_${classId}`, JSON.stringify(localLessons));
+  }, [localLessons, classId]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -72,14 +113,25 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
     totalPoints: "10"
   });
 
+  // Results Report State
+  const allAssignments = assignmentList.filter(a => a.classId === classId);
+  const allExams = practiceExams.filter(e => e.classId === classId);
+  const allTests = [
+    ...allAssignments.map(a => ({ id: a.id, title: a.title, type: "assignment" })),
+    ...allExams.map(e => ({ id: e.id, title: e.title, type: "exam" }))
+  ];
+
+  const [reportFilterTestId, setReportFilterTestId] = useState<string>(allTests[0]?.id || "all");
+  const [reportFilterGrade, setReportFilterGrade] = useState<string>("all");
+
   if (!cls) return <p>Không tìm thấy lớp</p>;
 
   const allTeachers = [...mainTeachers, ...assistants];
   const teacher = allTeachers.find((t) => t.id === cls.teacherId);
   const selectedSession = classSessions.find((s) => s.id === selectedSessionId);
-  const attendance = sessionAttendance.find((a) => a.sessionId === selectedSessionId);
-  const evals = sessionEvaluations.filter((e) => e.sessionId === selectedSessionId);
-  const sessionLessons = lessons.filter((l) => selectedSession?.lessonId && l.id === selectedSession.lessonId);
+  const attendance = localAttendance.find((a: any) => a.sessionId === selectedSessionId);
+  const evals = localEvals.filter((e: any) => e.sessionId === selectedSessionId);
+  const sessionLessons = localLessons.filter((l) => selectedSession?.lessonId && l.id === selectedSession.lessonId);
   const sessionAssignments = assignmentList.filter((a) => a.sessionId === selectedSessionId);
   
   const filteredAttendance = attendance?.records.filter(r => !isParent || r.studentId === selectedChildId) || [];
@@ -112,6 +164,30 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
     setAssignmentList([...assignmentList, newAssgn]);
     setIsAddAssignmentOpen(false);
     toast.success(`Đã thêm bài tập: ${formData.title}`);
+  };
+
+  const handleUpdateQuiz = () => {
+    if (!editingLessonId) return;
+    const newLessons = localLessons.map((l: any) => 
+      l.id === editingLessonId ? { ...l, quiz: editingQuiz } : l
+    );
+    setLocalLessons(newLessons);
+    setEditingLessonId(null);
+    toast.success("Đã cập nhật cấu hình thử thách bài giảng");
+  };
+
+  const addQuizQuestion = () => {
+    const newQuestion = {
+      id: `q-${Date.now()}`,
+      timestamp: 60,
+      question: "Câu hỏi mới",
+      options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+      correctAnswer: 0
+    };
+    setEditingQuiz({
+      ...editingQuiz,
+      questions: [...(editingQuiz?.questions || []), newQuestion]
+    });
   };
 
   return (
@@ -154,201 +230,505 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
       {selectedSession && (
         <Tabs defaultValue="attendance" className="w-full">
           <TabsList className="bg-muted/30 p-1 w-full justify-start overflow-x-auto no-scrollbar h-auto">
-            <TabsTrigger value="attendance" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Điểm danh</TabsTrigger>
-            <TabsTrigger value="evaluation" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Nhập điểm & Nhận xét</TabsTrigger>
+            <TabsTrigger value="session-report" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">Báo cáo buổi học</TabsTrigger>
+            <TabsTrigger value="detailed-reports" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold text-admin mx-1 flex items-center gap-1.5">
+              <BarChart3 className="h-3.5 w-3.5" /> Báo cáo
+            </TabsTrigger>
             <TabsTrigger value="lessons" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Bài giảng</TabsTrigger>
             <TabsTrigger value="assignments" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">
-              Bài tập 
+              Bài tập chờ chấm
               {!readonly && ungradedCount > 0 && (
                 <Badge variant="destructive" className="ml-1 text-[10px] h-4 min-w-[16px] px-1 animate-pulse">
                   {ungradedCount}
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="practice-exams" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">
+              Luyện đề
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="attendance" className="mt-4">
-            <div className="space-y-2">
-              {filteredAttendance.map((r) => (
-                <div 
-                  key={r.studentId} 
-                  className="flex items-center justify-between p-4 bg-white rounded-xl border border-muted/20 shadow-sm hover:shadow-md transition-all group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-admin/5 flex items-center justify-center text-xs font-bold text-admin border border-admin/10">
-                      {r.studentName.charAt(0)}
-                    </div>
-                    <span className="text-sm font-bold text-slate-700">{r.studentName}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    {readonly ? (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-status-success/10 text-status-success rounded-full border border-status-success/20">
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        <span className="text-[11px] font-bold">Có mặt</span>
-                      </div>
-                    ) : (
-                      <RadioGroup 
-                        defaultValue={r.status} 
-                        className="flex items-center gap-4"
-                        onValueChange={() => toast.info(`Cập nhật: ${r.studentName}`)}
-                      >
-                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
-                          <RadioGroupItem value="present" id={`p-${r.studentId}`} className="h-4 w-4 text-admin" />
-                          <Label htmlFor={`p-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Có mặt</Label>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
-                          <RadioGroupItem value="absent_excused" id={`ae-${r.studentId}`} className="h-4 w-4 text-status-warning" />
-                          <Label htmlFor={`ae-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Vắng CP</Label>
-                        </div>
-                        <div className="flex items-center gap-1.5 px-2 py-1 hover:bg-muted/30 rounded-lg transition-colors">
-                          <RadioGroupItem value="absent_unexcused" id={`au-${r.studentId}`} className="h-4 w-4 text-destructive" />
-                          <Label htmlFor={`au-${r.studentId}`} className="text-[11px] font-medium cursor-pointer">Vắng KP</Label>
-                        </div>
-                      </RadioGroup>
-                    )}
-
-                    {!readonly && (
-                      <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-admin hover:bg-admin/5">
-                           <Phone className="h-3.5 w-3.5" />
-                         </Button>
-                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-green-600 hover:bg-green-50">
-                           <MessageCircle className="h-3.5 w-3.5" />
-                         </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              
-              {!readonly && attendance && filteredAttendance.length > 0 && (
-                <div className="pt-4 flex justify-center">
-                  <Button 
-                    className="bg-admin hover:bg-admin/90 h-10 px-10 rounded-full font-bold shadow-lg shadow-admin/20 transition-all hover:scale-[1.02]" 
-                    onClick={() => toast.success("Đã xác nhận điểm danh!")}
-                  >
-                    Xác nhận hoàn tất điểm danh
-                  </Button>
-                </div>
-              )}
-
-              {filteredAttendance.length === 0 && (
-                <div className="text-center py-12 bg-white rounded-2xl border border-dashed">
-                  <p className="text-muted-foreground text-sm italic">Chưa có dữ liệu học sinh</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="evaluation" className="mt-4">
+          <TabsContent value="session-report" className="mt-4">
             <div className="space-y-4">
-              {filteredEvals.length > 0 ? filteredEvals.map((ev) => {
-                const radarData = Object.entries(ev.criteria).map(([k, v]) => ({ subject: criteriaLabels[k], value: v, fullMark: 10 }));
+              {filteredAttendance.length > 0 ? filteredAttendance.map((record) => {
+                const evalData = evals.find(e => e.studentId === record.studentId);
+                const radarData = evalData ? Object.entries(evalData.criteria).map(([k, v]) => ({ 
+                  subject: criteriaLabels[k], 
+                  value: v, 
+                  fullMark: 10 
+                })) : [];
+
                 return (
-                  <Card key={ev.studentId} className="border-none shadow-sm">
-                    <CardHeader className="pb-2"><CardTitle className="text-base font-bold flex items-center gap-2"><GraduationCap className="h-4 w-4 text-admin" /> {sessionAttendance.find((a) => a.sessionId === ev.sessionId)?.records.find((r) => r.studentId === ev.studentId)?.studentName || ev.studentId}</CardTitle></CardHeader>
-                    <CardContent className="grid gap-6 md:grid-cols-2">
-                      <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart data={radarData}>
-                            <PolarGrid stroke="#e2e8f0" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#64748b' }} />
-                            <PolarRadiusAxis domain={[0, 10]} stroke="#e2e8f0" />
-                            <Radar dataKey="value" stroke="hsl(217,91%,60%)" fill="hsl(217,91%,60%)" fillOpacity={0.3} />
-                          </RadarChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <div className="space-y-3">
-                        {Object.entries(ev.criteria).map(([k, v]) => (
-                          <div key={k} className="space-y-1">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{criteriaLabels[k]}</span>
-                              {!readonly ? (
-                                <div className="flex items-center gap-1.5 bg-muted/30 px-2 py-0.5 rounded-lg border border-muted-foreground/10">
-                                  <Input 
-                                    type="number" 
-                                    className="h-6 w-12 text-center text-[11px] font-bold p-0 bg-transparent border-none shadow-none focus-visible:ring-0" 
-                                    defaultValue={v} 
-                                    max={10} 
-                                    min={0} 
-                                    step={0.1}
-                                  />
-                                  <span className="text-[10px] font-bold text-muted-foreground opacity-50">/10</span>
-                                </div>
-                              ) : (
-                                <span className="text-[11px] font-bold text-admin">{v}/10</span>
-                              )}
-                            </div>
-                            <Slider value={[v]} max={10} step={0.5} disabled={readonly} className="h-1.5" />
-                          </div>
-                        ))}
-                        <div className="mt-4 p-3 bg-muted/30 rounded-xl border border-muted-foreground/10">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2 flex items-center gap-1 tracking-wider"><CheckCircle className="h-3 w-3 text-admin" /> Nhận xét tiết học</p>
-                          {!readonly ? (
-                            <Textarea 
-                              className="text-xs bg-white border-muted-foreground/20 min-h-[80px] focus-visible:ring-admin" 
-                              placeholder="Nhập nhận xét về buổi học của học sinh..."
-                              defaultValue={ev.comment}
-                            />
-                          ) : (
-                            <p className="text-sm italic font-medium leading-relaxed text-muted-foreground">"{ev.comment}"</p>
-                          )}
+                  <Card key={record.studentId} className="border-none shadow-sm overflow-hidden bg-white hover:shadow-md transition-all">
+                    <CardHeader className="py-3 px-4 border-b bg-muted/5 flex flex-col md:flex-row md:items-center justify-between gap-4 space-y-0">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-admin/10 flex items-center justify-center text-xs font-bold text-admin border border-admin/20">
+                          {record.studentName.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold">{record.studentName}</h4>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-tight font-medium">Báo cáo chi tiết buổi học</p>
                         </div>
                       </div>
+                      
+                      {!readonly && (
+                        <RadioGroup 
+                          defaultValue={record.status} 
+                          className="flex flex-wrap items-center gap-2 md:gap-4"
+                          onValueChange={(val) => {
+                            const newAttendance = localAttendance.map((a: any) => {
+                              if (a.sessionId === selectedSessionId) {
+                                return {
+                                  ...a,
+                                  records: a.records.map((r: any) => 
+                                    r.studentId === record.studentId ? { ...r, status: val } : r
+                                  )
+                                };
+                              }
+                              return a;
+                            });
+                            setLocalAttendance(newAttendance);
+                            toast.success(`Đã đánh dấu ${record.studentName}: ${attendanceIcons[val].label}`);
+                          }}
+                        >
+                          {Object.entries(attendanceIcons).map(([key, { label, className }]) => (
+                            <div key={key} className="flex items-center gap-1.5 px-2 py-1 rounded-full hover:bg-muted/50 transition-colors">
+                              <RadioGroupItem value={key} id={`${record.studentId}-${key}`} className={`h-3.5 w-3.5 border-2 ${className.replace('text-', 'border-').replace('status-', '')}`} />
+                              <Label htmlFor={`${record.studentId}-${key}`} className={`text-[10px] font-bold cursor-pointer ${className}`}>{label}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
+                    </CardHeader>
+                    
+                    <CardContent className="p-4">
+                      {evalData ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                          <div className="h-[220px] w-full bg-muted/5 rounded-2xl p-2">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                                <PolarGrid stroke="#e2e8f0" />
+                                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: "#64748b", fontWeight: 600 }} />
+                                <PolarRadiusAxis angle={30} domain={[0, 10]} hide />
+                                <Radar name={record.studentName} dataKey="value" stroke="#7c3aed" fill="#7c3aed" fillOpacity={0.4} />
+                              </RadarChart>
+                            </ResponsiveContainer>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                              {Object.entries(evalData.criteria).map(([key, value]) => (
+                                <div key={key} className="space-y-1.5">
+                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tight text-slate-600">
+                                    <Label>{criteriaLabels[key]}</Label>
+                                    <span className="bg-admin/10 text-admin px-2 py-0.5 rounded-md font-black">{value}/10</span>
+                                  </div>
+                                  <Slider 
+                                    disabled={readonly}
+                                    defaultValue={[value as number]} 
+                                    max={10} 
+                                    step={1} 
+                                    className="pt-1"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            
+                            <div className="space-y-1.5 pt-2">
+                              <Label className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-1.5">
+                                <MessageCircle className="h-3 w-3" /> Nhận xét buổi học
+                              </Label>
+                              <Textarea 
+                                disabled={readonly}
+                                className="text-xs min-h-[60px] bg-muted/20 border-none shadow-none focus-visible:ring-admin italic"
+                                defaultValue={evalData.comment}
+                                placeholder="Nhập nhận xét về buổi học..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic text-center py-4 bg-muted/5 rounded-xl border border-dashed">
+                          Chưa có dữ liệu đánh giá chi tiết cho học sinh này
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 );
               }) : (
-                <p className="text-muted-foreground text-center py-8">
-                  {isParent ? "Chưa có đánh giá cho học sinh này" : "Chưa có đánh giá cho buổi này"}
-                </p>
+                <div className="text-center py-12 border-2 border-dashed rounded-3xl bg-muted/10">
+                  <p className="text-muted-foreground text-sm font-medium">Không tìm thấy dữ liệu báo cáo cho buổi này</p>
+                </div>
               )}
 
-              {!readonly && (
-                <div className="p-4 bg-white rounded-xl border border-admin/20 shadow-sm flex items-center justify-between">
-                  <p className="text-sm font-medium text-muted-foreground">Sau khi điều chỉnh điểm, hãy nhấn lưu:</p>
-                  <Button className="bg-admin" size="sm" onClick={() => toast.success("Đã cập nhật đánh giá!")}>Lưu thay đổi</Button>
+              {!readonly && filteredAttendance.length > 0 && (
+                <div className="sticky bottom-4 p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-admin/20 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 z-10 mx-auto max-w-2xl">
+                  <p className="text-sm font-bold text-slate-600 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-status-success" /> Hoàn tất điểm danh và đánh giá:
+                  </p>
+                  <Button className="bg-admin rounded-xl px-8 shadow-lg shadow-admin/20 hover:scale-[1.02] transition-transform w-full md:w-auto" size="sm" onClick={() => toast.success("Đã lưu báo cáo buổi học thành công!")}>
+                    Xác nhận & Lưu báo cáo
+                  </Button>
                 </div>
               )}
             </div>
           </TabsContent>
 
+          <TabsContent value="detailed-reports" className="mt-4">
+            <Tabs defaultValue="results" className="w-full">
+              <TabsList className="bg-muted/20 p-1 mb-4 w-fit h-auto">
+                <TabsTrigger value="results" className="text-[10px] px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">Kết quả đào tạo</TabsTrigger>
+                <TabsTrigger value="attendance" className="text-[10px] px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all font-bold">Chuyên cần</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="results" className="mt-0 space-y-4">
+                <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs font-bold text-muted-foreground whitespace-nowrap">Bài kiểm tra:</Label>
+                    <Select value={reportFilterTestId} onValueChange={setReportFilterTestId}>
+                      <SelectTrigger className="w-[200px] h-8 text-[11px]">
+                        <SelectValue placeholder="Chọn bài kiểm tra" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allTests.map(t => (
+                          <SelectItem key={t.id} value={t.id} className="text-xs">{t.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs font-bold text-muted-foreground whitespace-nowrap">Xếp loại:</Label>
+                    <Select value={reportFilterGrade} onValueChange={setReportFilterGrade}>
+                      <SelectTrigger className="w-[120px] h-8 text-[11px]">
+                        <SelectValue placeholder="Tất cả xếp loại" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="text-xs">Tất cả xếp loại</SelectItem>
+                        <SelectItem value="excellent" className="text-xs text-indigo-600 font-bold">Xuất sắc (9-10)</SelectItem>
+                        <SelectItem value="good" className="text-xs text-green-600 font-bold">Giỏi (8-8.9)</SelectItem>
+                        <SelectItem value="fair" className="text-xs text-blue-600 font-bold">Khá (6.5-7.9)</SelectItem>
+                        <SelectItem value="average" className="text-xs text-yellow-600 font-bold">Trung bình (5-6.4)</SelectItem>
+                        <SelectItem value="weak" className="text-xs text-red-600 font-bold">Yếu (&lt; 5)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Card className="border-none shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/30">
+                        <TableHead className="w-[50px] text-[10px] font-bold uppercase py-3">STT</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase py-3">Học sinh</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase py-3 text-center">Điểm số</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase py-3 text-center">Xếp loại</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase py-3">Nhận xét / Trạng thái</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(() => {
+                        const students = parentStudentAccounts.flatMap(p => p.children).filter(c => c.classes.includes(classId));
+                        const test = allTests.find(t => t.id === reportFilterTestId);
+                        
+                        let data = students.map(s => {
+                          let score: number | null = null;
+                          let feedback = "";
+                          let status = "N/A";
+
+                          if (test?.type === "assignment") {
+                            const assgn = assignmentList.find(a => a.id === test.id);
+                            const sub = assgn?.submissions.find(sub => sub.studentId === s.id);
+                            score = sub?.score || null;
+                            feedback = sub?.feedback || "";
+                            status = sub ? (sub.status === "graded" ? "Đã chấm" : "Chờ chấm") : "Chưa nộp";
+                          } else if (test?.type === "exam") {
+                            const exam = practiceExams.find(e => e.id === test.id);
+                            const rank = exam?.rankings.find(r => r.studentName === s.name);
+                            score = rank?.score || null;
+                            status = score !== null ? "Hoàn thành" : "Chưa làm";
+                          }
+
+                          let classification = { label: "N/A", color: "bg-slate-100 text-slate-500", key: "none" };
+                          if (score !== null) {
+                            if (score >= 9) classification = { label: "Xuất sắc", color: "bg-indigo-100 text-indigo-600", key: "excellent" };
+                            else if (score >= 8) classification = { label: "Giỏi", color: "bg-green-100 text-green-600", key: "good" };
+                            else if (score >= 6.5) classification = { label: "Khá", color: "bg-blue-100 text-blue-600", key: "fair" };
+                            else if (score >= 5) classification = { label: "Trung bình", color: "bg-yellow-100 text-yellow-600", key: "average" };
+                            else classification = { label: "Yếu", color: "bg-red-100 text-red-600", key: "weak" };
+                          }
+
+                          return { student: s, score, classification, feedback, status };
+                        });
+
+                        if (reportFilterGrade !== "all") {
+                          data = data.filter(d => d.classification.key === reportFilterGrade);
+                        }
+
+                        if (data.length === 0) return (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-12 text-muted-foreground italic text-sm">
+                              Không tìm thấy kết quả phù hợp
+                            </TableCell>
+                          </TableRow>
+                        );
+
+                        return data.map((d, index) => (
+                          <TableRow key={d.student.id} className="hover:bg-muted/5">
+                            <TableCell className="text-xs py-3">{index + 1}</TableCell>
+                            <TableCell className="py-3">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-full bg-admin/10 flex items-center justify-center text-[10px] font-bold text-admin">
+                                  {d.student.name.charAt(0)}
+                                </div>
+                                <span className="text-xs font-bold">{d.student.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center py-3">
+                              <span className={`text-xs font-black ${d.score !== null ? "text-admin" : "text-muted-foreground"}`}>
+                                {d.score !== null ? `${d.score}đ` : "--"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center py-3">
+                              {d.score !== null ? (
+                                <Badge className={`${d.classification.color} text-[10px] border-none shadow-none`}>
+                                  {d.classification.label}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground border-slate-200">
+                                  {d.status}
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-[11px] text-muted-foreground italic py-3 max-w-[200px] truncate">
+                              {d.feedback || (d.score !== null ? "Đã có điểm" : "Chưa có nhận xét")}
+                            </TableCell>
+                          </TableRow>
+                        ));
+                      })()}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="attendance" className="mt-0">
+                <Card className="border-none shadow-sm overflow-hidden bg-white">
+                  <CardHeader className="py-4 border-b bg-muted/5">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-bold flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-600" /> Thống kê chuyên cần lớp học
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/30">
+                          <TableHead className="w-[50px] text-[10px] font-bold uppercase py-3 sticky left-0 bg-white z-10">STT</TableHead>
+                          <TableHead className="min-w-[180px] text-[10px] font-bold uppercase py-3 sticky left-[50px] bg-white z-10 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Học sinh</TableHead>
+                          <TableHead className="min-w-[100px] text-[10px] font-bold uppercase py-3 text-center bg-emerald-50/50">% Có mặt</TableHead>
+                          {classSessions.map(s => (
+                            <TableHead key={s.id} className="min-w-[80px] text-[10px] font-bold uppercase py-3 text-center border-l">
+                              <div className="flex flex-col">
+                                <span>{s.date.split('-').slice(1).reverse().join('/')}</span>
+                                <span className="text-[8px] font-medium opacity-60">Buổi {s.id.split('-').pop()}</span>
+                              </div>
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(() => {
+                          const students = parentStudentAccounts.flatMap(p => p.children).filter(c => c.classes.includes(classId));
+                          
+                          return students.map((s, index) => {
+                            let presentCount = 0;
+                            let sessionsWithData = 0;
+
+                            const studentRow = classSessions.map(sess => {
+                              const sessAtt = localAttendance.find((a: any) => a.sessionId === sess.id);
+                              const record = sessAtt?.records.find((r: any) => r.studentId === s.id);
+                              
+                              if (record) {
+                                sessionsWithData++;
+                                if (record.status === "present" || record.status === "late") presentCount++;
+                              }
+
+                              return record?.status || null;
+                            });
+
+                            const attendancePercent = sessionsWithData > 0 ? Math.round((presentCount / sessionsWithData) * 100) : 0;
+
+                            return (
+                              <TableRow key={s.id} className="hover:bg-muted/5 transition-colors">
+                                <TableCell className="text-xs py-3 sticky left-0 bg-white">{index + 1}</TableCell>
+                                <TableCell className="py-3 sticky left-[50px] bg-white border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-7 w-7 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-700 font-black">
+                                      {s.name.charAt(0)}
+                                    </div>
+                                    <span className="text-xs font-bold">{s.name}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center py-3 bg-emerald-50/30">
+                                  <Badge className={`${attendancePercent >= 90 ? "bg-emerald-500" : attendancePercent >= 70 ? "bg-amber-500" : "bg-destructive"} text-white border-none shadow-none text-[10px] font-black px-2`}>
+                                    {attendancePercent}%
+                                  </Badge>
+                                </TableCell>
+                                {studentRow.map((status, i) => (
+                                  <TableCell key={i} className="text-center py-3 border-l">
+                                    {status ? (
+                                      <div className="flex justify-center">
+                                        {status === "present" && <CheckCircle className="h-4 w-4 text-emerald-500" />}
+                                        {status === "late" && <Clock className="h-4 w-4 text-amber-500" />}
+                                        {status === "absent_excused" && <AlertCircle className="h-4 w-4 text-amber-500" />}
+                                        {status === "absent_unexcused" && <XCircle className="h-4 w-4 text-destructive" />}
+                                      </div>
+                                    ) : (
+                                      <span className="text-muted-foreground opacity-20">—</span>
+                                    )}
+                                  </TableCell>
+                                ))}
+                              </TableRow>
+                            );
+                          });
+                        })()}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+
           <TabsContent value="lessons" className="mt-4 space-y-4">
-            {rolePrefix === "/admin" && (
-              <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-700">Danh sách bài giảng</h3>
+              {rolePrefix === "/admin" && (
                 <Button size="sm" className="bg-admin h-8 px-4" onClick={() => toast.info("Tính năng thêm bài giảng (demo)")}>
                   <Plus className="mr-2 h-4 w-4" />Thêm bài giảng
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
+            
             {sessionLessons.length > 0 ? sessionLessons.map((lesson) => (
-              <div key={lesson.id} className="group relative">
-                <Card className="cursor-pointer hover:shadow-md transition-all border-none shadow-sm overflow-hidden" onClick={() => navigate(`${rolePrefix}/classes/${classId}/lesson/${lesson.id}`)}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-base transition-colors group-hover:text-admin">{lesson.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-1">{lesson.description}</p>
-                      <div className="flex gap-2 mt-3">
-                        <Badge variant="secondary" className="bg-muted/50 text-[10px]">{lesson.videos.length} video</Badge>
-                        <Badge variant="secondary" className="bg-muted/50 text-[10px]">{lesson.attachments.length} tài liệu</Badge>
-                        <Badge className={`${lesson.status === "published" ? "bg-status-success" : "bg-status-warning"} text-[10px]`}>
+              <Card key={lesson.id} className="border-none shadow-sm overflow-hidden bg-white hover:shadow-md transition-all group">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row">
+                    <div className="md:w-1/4 h-32 md:h-auto bg-slate-100 relative overflow-hidden group-hover:scale-105 transition-transform cursor-pointer" onClick={() => navigate(`${rolePrefix}/classes/${classId}/lesson/${lesson.id}`)}>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+                        <PlayCircle className="h-10 w-10 text-white drop-shadow-lg" />
+                      </div>
+                      <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${lesson.id}`} alt="lesson" className="w-full h-full object-cover" />
+                    </div>
+                    
+                    <div className="flex-1 p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div className="cursor-pointer" onClick={() => navigate(`${rolePrefix}/classes/${classId}/lesson/${lesson.id}`)}>
+                          <h4 className="font-bold text-base group-hover:text-admin transition-colors">{lesson.title}</h4>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{lesson.description}</p>
+                        </div>
+                        
+                        {!readonly && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold border-admin/30 text-admin hover:bg-admin/5">
+                                <Settings className="mr-1.5 h-3.5 w-3.5" /> Cấu hình thử thách
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Video className="h-5 w-5 text-admin" /> Cấu hình thử thách: {lesson.title}
+                                </DialogTitle>
+                              </DialogHeader>
+                              
+                              <div className="py-4 space-y-6">
+                                <section className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                    <h5 className="text-sm font-bold flex items-center gap-2"><ClipboardList className="h-4 w-4 text-admin" /> Danh sách câu hỏi</h5>
+                                    <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => toast.info("Thêm câu hỏi mới")}>
+                                      <Plus className="mr-1 h-3 w-3" /> Thêm câu hỏi
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="space-y-3">
+                                    {[1, 2].map((i) => (
+                                      <Card key={i} className="border bg-muted/5">
+                                        <CardContent className="p-4 space-y-4">
+                                          <div className="flex justify-between items-start gap-4">
+                                            <div className="flex-1 space-y-2">
+                                              <Label className="text-xs font-bold">Câu hỏi {i}</Label>
+                                              <Input defaultValue={i === 1 ? "Đâu là đặc điểm chính của đoạn văn NLVH?" : "Biện pháp tu từ nào được sử dụng trong câu trên?"} className="text-sm h-9" />
+                                            </div>
+                                            <div className="w-[120px] space-y-2">
+                                              <Label className="text-xs font-bold">Vị trí dừng (s)</Label>
+                                              <Input type="number" defaultValue={i * 120} className="text-sm h-9 text-center" />
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 mt-6">
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                          
+                                          <div className="grid grid-cols-2 gap-3">
+                                            {['A', 'B', 'C', 'D'].map((opt) => (
+                                              <div key={opt} className="flex items-center gap-2">
+                                                <div className={`h-6 w-6 rounded-md flex items-center justify-center text-[10px] font-black border ${opt === 'A' ? 'bg-admin text-white border-admin' : 'bg-white text-slate-400 border-slate-200'}`}>
+                                                  {opt}
+                                                </div>
+                                                <Input defaultValue={`Đáp án ${opt} mẫu...`} className="text-xs h-8" />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                </section> section
+
+                                <section className="p-4 bg-admin/5 rounded-2xl border border-admin/10 space-y-4">
+                                  <h5 className="text-sm font-bold flex items-center gap-2"><Settings className="h-4 w-4 text-admin" /> Cấu hình đạt</h5>
+                                  <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                      <p className="text-xs font-bold">Số câu phải đạt</p>
+                                      <p className="text-[10px] text-muted-foreground">Học sinh phải trả lời đúng tối thiểu số câu này để xem tiếp video</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <Input type="number" defaultValue={2} className="h-9 w-16 text-center font-bold" />
+                                      <span className="text-xs font-medium text-slate-500">/ 2 câu</span>
+                                    </div>
+                                  </div>
+                                </section>
+                              </div>
+                              
+                              <DialogFooter>
+                                <Button className="bg-admin rounded-xl px-8" onClick={() => toast.success("Đã cập nhật cấu hình thử thách!")}>Lưu cấu hình</Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 pt-1 border-t border-dashed mt-2">
+                        <Badge variant="secondary" className="bg-muted/50 text-[10px] font-medium flex gap-1 items-center">
+                          <Video className="h-3 w-3" /> {lesson.videos.length} Videos
+                        </Badge>
+                        <Badge variant="secondary" className="bg-muted/50 text-[10px] font-medium flex gap-1 items-center">
+                          <FileText className="h-3 w-3" /> {lesson.attachments.length} Tài liệu
+                        </Badge>
+                        <Badge className={`${lesson.status === "published" ? "bg-status-success text-white" : "bg-status-warning text-white"} text-[10px] border-none`}>
                           {lesson.status === "published" ? "Đã xuất bản" : "Nháp"}
                         </Badge>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             )) : (
-              <div className="text-center py-12 border-2 border-dashed rounded-2xl bg-muted/10">
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl bg-muted/10">
                 <FileText className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground text-sm mb-4 font-medium">Chưa có nội dung bài giảng cho buổi này</p>
-                {rolePrefix === "/admin" && (
-                  <Button size="sm" variant="outline" className="border-admin text-admin hover:bg-admin/5" onClick={() => toast.info("Gán bài giảng từ thư viện")}>
-                    Gán bài giảng từ thư viện
-                  </Button>
-                )}
+                <p className="text-muted-foreground text-sm font-medium">Chưa có nội dung bài giảng cho buổi này</p>
               </div>
             )}
           </TabsContent>
@@ -415,12 +795,12 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
                                   
                                   <div className="flex flex-wrap items-center gap-3">
                                     {/* Cột File bài làm - New */}
-                                    {(sub.status === "submitted" || sub.status === "graded") && sub.imageUrls?.[0] && (
+                                    {(sub.status === "submitted" || sub.status === "graded") && (sub as any).imageUrls?.[0] && (
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="h-8 gap-2 border-admin/30 text-admin hover:bg-admin/5 px-2"
-                                        onClick={() => setViewingImage(sub.imageUrls![0])}
+                                        onClick={() => setViewingImage((sub as any).imageUrls![0])}
                                       >
                                         <FileSearch className="h-4 w-4" />
                                         <span className="text-[10px] font-bold">File bài làm</span>
@@ -529,6 +909,65 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
                       <Plus className="mr-2 h-4 w-4" /> Giao bài tập đầu tiên
                     </Button>
                   )}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="practice-exams" className="mt-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-admin" /> Danh sách đề thi luyện tập
+                </h3>
+                <Badge variant="outline" className="text-[10px] border-admin/20 text-admin font-black">5 ĐỀ CÓ SẴN</Badge>
+              </div>
+
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Card key={i} className="group border border-muted/50 hover:border-admin/40 transition-all hover:shadow-md bg-white rounded-xl overflow-hidden">
+                  <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-12 h-12 rounded-xl bg-admin/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <FileText className="h-6 w-6 text-admin" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-slate-800 group-hover:text-admin transition-colors line-clamp-1">
+                          Đề thi thử số {i} - Ngữ văn 9 (Nâng cao) - Học kỳ 2
+                        </h4>
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-medium">
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 90 phút</span>
+                          <span className="flex items-center gap-1"><FileDown className="h-3 w-3" /> PDF (1.{i} MB)</span>
+                          <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-black text-[8px]">MIỄN PHÍ</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-9 px-4 rounded-xl border-admin/20 text-admin hover:bg-admin/5 font-bold text-[11px] flex-1 md:flex-none"
+                        onClick={() => toast.info(`Sắp ra mắt: Chế độ làm bài bài thi số ${i}`)}
+                      >
+                         Làm bài Online
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="h-9 px-4 rounded-xl bg-admin hover:bg-admin/90 font-bold text-[11px] shadow-lg shadow-admin/10 flex-1 md:flex-none"
+                        onClick={() => toast.success(`Đã bắt đầu tải về: Đề thi thử số ${i}`)}
+                      >
+                        <Download className="mr-2 h-3.5 w-3.5" /> Tải về
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {!readonly && (
+                <div className="pt-4 flex justify-center">
+                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-admin hover:bg-admin/5 font-bold" onClick={() => toast.info("Đang mở kho đề thi...")}>
+                     <Plus className="mr-2 h-3.5 w-3.5" /> Xem thêm từ kho đề thi chung
+                   </Button>
                 </div>
               )}
             </div>
