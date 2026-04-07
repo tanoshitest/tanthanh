@@ -34,18 +34,18 @@ export const parentStudentAccounts = [
 ];
 
 export const classes: ClassInfo[] = [
-  { id: "class-001", name: "Lớp 9A - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 35, maxStudents: 40, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890" }] },
-  { id: "class-002", name: "Lớp 9B - Văn Cao cấp", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 24, maxStudents: 30, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321" }] },
-  { id: "class-003", name: "Lớp 7 - Văn Trung cấp", subject: "Văn", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 28, maxStudents: 35, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }, { day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
-  { id: "class-004", name: "Lớp 6 - Văn Sơ cấp", subject: "Văn", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 20, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
-  { id: "class-005", name: "Lớp 9A - Toán Cao cấp", subject: "Toán", grade: 9, level: "advanced", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 32, maxStudents: 35, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1111222233" }] },
-  { id: "class-006", name: "Lớp 9B - Toán Trung cấp", subject: "Toán", grade: 9, level: "intermediate", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 30, maxStudents: 35, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/4444555566" }] },
-  { id: "class-007", name: "Lớp 7 - Toán Trung cấp", subject: "Toán", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 25, maxStudents: 30, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }] },
-  { id: "class-008", name: "Lớp 8 - Toán Trung cấp", subject: "Toán", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-002", assistantId: "gv-004", studentCount: 22, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
-  { id: "class-009", name: "Lớp 6 - Toán Sơ cấp", subject: "Toán", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 18, maxStudents: 25, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
-  { id: "class-010", name: "Lớp 8 - Văn Trung cấp", subject: "Văn", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 26, maxStudents: 30, schedule: [{ day: "Chủ nhật", time: "09:00-11:00", type: "offline" }] },
-  { id: "class-011", name: "Kèm 1-1 Gia Bảo", subject: "Toán", grade: 8, level: "intermediate", category: "kem", teacherId: "gv-002", assistantId: null, studentCount: 1, maxStudents: 2, schedule: [{ day: "Thứ 5", time: "16:00-17:30", type: "offline" }] },
-  { id: "class-012", name: "Lớp Văn Online 9", subject: "Văn", grade: 9, level: "intermediate", category: "online", teacherId: "gv-001", assistantId: "gv-003", studentCount: 15, maxStudents: 50, schedule: [{ day: "Thứ 7", time: "20:00-21:30", type: "online", zoomLink: "https://zoom.us/j/online123" }] }
+  { id: "class-001", name: "Chuyên - 1", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 35, maxStudents: 40, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1234567890" }] },
+  { id: "class-002", name: "Chuyên - 2", subject: "Văn", grade: 9, level: "advanced", category: "chuyen", teacherId: "gv-001", assistantId: "gv-003", studentCount: 24, maxStudents: 30, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321" }] },
+  { id: "class-003", name: "Đại trà - 1", subject: "Văn", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 28, maxStudents: 35, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }, { day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-004", name: "Đại trà - 2", subject: "Văn", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 20, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
+  { id: "class-005", name: "Luyện thi - 1", subject: "Toán", grade: 9, level: "advanced", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 32, maxStudents: 35, schedule: [{ day: "Thứ 3", time: "18:00-20:00", type: "offline" }, { day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/1111222233" }] },
+  { id: "class-006", name: "Luyện thi - 2", subject: "Toán", grade: 9, level: "intermediate", category: "luyen-thi", teacherId: "gv-002", assistantId: "gv-004", studentCount: 30, maxStudents: 35, schedule: [{ day: "Thứ 2", time: "18:00-20:00", type: "offline" }, { day: "Thứ 5", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/4444555566" }] },
+  { id: "class-007", name: "Đại trà - 3", subject: "Toán", grade: 7, level: "intermediate", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 25, maxStudents: 30, schedule: [{ day: "Thứ 4", time: "18:00-20:00", type: "offline" }] },
+  { id: "class-008", name: "Đại trà - 4", subject: "Toán", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-002", assistantId: "gv-004", studentCount: 22, maxStudents: 30, schedule: [{ day: "Thứ 7", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-009", name: "Đại trà - 5", subject: "Toán", grade: 6, level: "beginner", category: "dai-tra", teacherId: "gv-005", assistantId: "gv-004", studentCount: 18, maxStudents: 25, schedule: [{ day: "Thứ 7", time: "14:00-16:00", type: "offline" }] },
+  { id: "class-010", name: "Đại trà - 6", subject: "Văn", grade: 8, level: "intermediate", category: "dai-tra", teacherId: "gv-001", assistantId: "gv-003", studentCount: 26, maxStudents: 30, schedule: [{ day: "Chủ nhật", time: "09:00-11:00", type: "offline" }] },
+  { id: "class-011", name: "Kèm - 1", subject: "Toán", grade: 8, level: "intermediate", category: "kem", teacherId: "gv-002", assistantId: null, studentCount: 1, maxStudents: 2, schedule: [{ day: "Thứ 5", time: "16:00-17:30", type: "offline" }] },
+  { id: "class-012", name: "Online - 1", subject: "Văn", grade: 9, level: "intermediate", category: "online", teacherId: "gv-001", assistantId: "gv-003", studentCount: 15, maxStudents: 50, schedule: [{ day: "Thứ 7", time: "20:00-21:30", type: "online", zoomLink: "https://zoom.us/j/online123" }] }
 ];
 
 export const sessions = [
@@ -57,7 +57,6 @@ export const sessions = [
   { id: "s-006", classId: "class-002", date: "2025-01-21", day: "Thứ 3", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-001", topic: "Lặng lẽ Sa Pa" },
   { id: "s-007", classId: "class-002", date: "2025-01-24", day: "Thứ 6", time: "18:00-20:00", type: "online", zoomLink: "https://zoom.us/j/0987654321", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-002", topic: "NLXH: Lập dàn ý" },
   { id: "s-008", classId: "class-002", date: "2025-01-28", day: "Thứ 3", time: "18:00-20:00", type: "offline", status: "upcoming" as const, teacherId: "gv-001", lessonId: "lesson-003", topic: "Luyện viết đoạn văn" },
-  { id: "s-009", classId: "class-003", date: "2025-01-22", day: "Thứ 4", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-001", topic: "Thơ trung đại Việt Nam" },
   { id: "s-010", classId: "class-003", date: "2025-01-25", day: "Thứ 7", time: "09:00-11:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-002", topic: "Luyện tập thơ Đường luật" },
   { id: "s-011", classId: "class-004", date: "2025-01-25", day: "Thứ 7", time: "14:00-16:00", type: "offline", status: "completed" as const, teacherId: "gv-001", lessonId: "lesson-001", topic: "Thế giới truyện cổ tích" },
   { id: "s-012", classId: "class-005", date: "2025-01-21", day: "Thứ 3", time: "18:00-20:00", type: "offline", status: "completed" as const, teacherId: "gv-002", lessonId: "lesson-004", topic: "H hệ phương trình: PP thế" },
@@ -233,13 +232,26 @@ export const assignments = [
   },
   {
     id: "assgn-s005-001", sessionId: "s-005", lessonId: "lesson-003", classId: "class-001",
-    title: "Viết đoạn văn NLVH về khổ 1 bài Mùa xuân nho nhỏ",
+    title: "Bài 1: Viết đoạn văn NLVH về khổ 1 bài Mùa xuân nho nhỏ",
     submitType: "online_or_upload" as const, dueDate: "2025-02-05", totalPoints: 10,
     submissions: [
       { id: "sub-005-1", studentId: "hs-001", studentName: "Nguyễn Minh Khôi", status: "submitted" as const, score: 0, submittedAt: "2025-02-04 14:00", feedback: "", imageUrls: ["https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1000"] },
-      { id: "sub-005-2", studentId: "hs-002", studentName: "Nguyễn Thị Hạ Vy", status: "graded" as const, score: 9, submittedAt: "2025-02-04 15:30", feedback: "Phân tích hay, giàu cảm xúc.", imageUrls: ["https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1000"] },
-      { id: "sub-005-3", studentId: "hs-003", studentName: "Trương Đình Phúc", status: "submitted" as const, score: 0, submittedAt: "2025-02-04 19:45", feedback: "", imageUrls: ["https://images.unsplash.com/photo-1531346761392-51f938217036?q=80&w=1000"] }
+      { id: "sub-005-2", studentId: "hs-002", studentName: "Nguyễn Thị Hạ Vy", status: "graded" as const, score: 9, submittedAt: "2025-02-04 15:30", feedback: "Phân tích hay, giàu cảm xúc.", imageUrls: ["https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1000"] }
     ]
+  },
+  {
+    id: "assgn-s005-002", sessionId: "s-005", lessonId: "lesson-003", classId: "class-001",
+    title: "Bài 2: Bài tập củng cố: Từ vựng & Biện pháp tu từ",
+    submitType: "online_or_upload" as const, dueDate: "2025-02-05", totalPoints: 10,
+    submissions: [
+      { id: "sub-005-4", studentId: "hs-001", studentName: "Nguyễn Minh Khôi", status: "graded" as const, score: 9.5, submittedAt: "2025-02-04 14:00", feedback: "Làm bài rất xuất sắc, điểm tuyệt đối cho phần biện pháp tu từ.", imageUrls: ["https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1000"] }
+    ]
+  },
+  {
+    id: "assgn-s005-003", sessionId: "s-005", lessonId: "lesson-003", classId: "class-001",
+    title: "Bài 3: Phiếu bài tập cuối tuần (Nâng cao)",
+    submitType: "online_or_upload" as const, dueDate: "2025-02-07", totalPoints: 10,
+    submissions: [] // No submission for hs-001 to show "Chưa nộp"
   }
 ];
 
@@ -267,33 +279,76 @@ export const tuitionFees = [
 ];
 
 export const calendarEvents = [
-  { dayOfWeek: 1, startTime: "18:00", endTime: "20:00", className: "Lớp 9A Văn CC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
-  { dayOfWeek: 1, startTime: "18:00", endTime: "20:00", className: "Lớp 9B Toán TC", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
-  { dayOfWeek: 2, startTime: "18:00", endTime: "20:00", className: "Lớp 9B Văn CC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
-  { dayOfWeek: 2, startTime: "18:00", endTime: "20:00", className: "Lớp 9A Toán CC", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
-  { dayOfWeek: 3, startTime: "18:00", endTime: "20:00", className: "Lớp 7 Văn TC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
-  { dayOfWeek: 3, startTime: "18:00", endTime: "20:00", className: "Lớp 7 Toán TC", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
-  { dayOfWeek: 4, startTime: "18:00", endTime: "20:00", className: "Lớp 9A Văn CC", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
-  { dayOfWeek: 4, startTime: "18:00", endTime: "20:00", className: "Lớp 9B Toán TC", teacherName: "Lê Hoàng Nam", type: "online", color: "#2563EB" },
-  { dayOfWeek: 5, startTime: "18:00", endTime: "20:00", className: "Lớp 9B Văn CC", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
-  { dayOfWeek: 5, startTime: "18:00", endTime: "20:00", className: "Lớp 9A Toán CC", teacherName: "Lê Hoàng Nam", type: "online", color: "#2563EB" },
-  { dayOfWeek: 6, startTime: "09:00", endTime: "11:00", className: "Lớp 7 Văn TC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
-  { dayOfWeek: 6, startTime: "09:00", endTime: "11:00", className: "Lớp 8 Toán TC", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
-  { dayOfWeek: 6, startTime: "14:00", endTime: "16:00", className: "Lớp 6 Văn SC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
-  { dayOfWeek: 6, startTime: "14:00", endTime: "16:00", className: "Lớp 6 Toán SC", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
-  { dayOfWeek: 0, startTime: "09:00", endTime: "11:00", className: "Lớp 8 Văn TC", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" }
+  // Thứ 2
+  { dayOfWeek: 1, startTime: "08:00", endTime: "10:00", className: "Luyện thi - 1", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 1, startTime: "10:00", endTime: "12:00", className: "Đại trà - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 1, startTime: "14:00", endTime: "16:00", className: "Đại trà - 3", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
+  { dayOfWeek: 1, startTime: "16:00", endTime: "18:00", className: "Luyện thi - 2", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 1, startTime: "18:00", endTime: "20:00", className: "Chuyên - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 1, startTime: "20:00", endTime: "22:00", className: "Online - 1", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
+
+  // Thứ 3
+  { dayOfWeek: 2, startTime: "08:00", endTime: "10:00", className: "Đại trà - 4", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 2, startTime: "10:00", endTime: "12:00", className: "Đại trà - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 2, startTime: "14:00", endTime: "16:00", className: "Kèm - 1", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 2, startTime: "18:00", endTime: "20:00", className: "Chuyên - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 2, startTime: "20:00", endTime: "22:00", className: "Luyện thi - 1", teacherName: "Lê Hoàng Nam", type: "online", color: "#2563EB" },
+
+  // Thứ 4
+  { dayOfWeek: 3, startTime: "08:00", endTime: "10:00", className: "Chuyên - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 3, startTime: "14:00", endTime: "16:00", className: "Đại trà - 5", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
+  { dayOfWeek: 3, startTime: "16:00", endTime: "18:00", className: "Đại trà - 6", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 3, startTime: "18:00", endTime: "20:00", className: "Đại trà - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 3, startTime: "20:00", endTime: "22:00", className: "Đại trà - 3", teacherName: "Đỗ Quang Huy", type: "online", color: "#059669" },
+
+  // Thứ 5
+  { dayOfWeek: 4, startTime: "10:00", endTime: "12:00", className: "Luyện thi - 2", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 4, startTime: "14:00", endTime: "16:00", className: "Đại trà - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 4, startTime: "16:00", endTime: "18:00", className: "Kèm - 1", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 4, startTime: "18:00", endTime: "20:00", className: "Chuyên - 1", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
+  { dayOfWeek: 4, startTime: "20:00", endTime: "22:00", className: "Luyện thi - 2", teacherName: "Lê Hoàng Nam", type: "online", color: "#2563EB" },
+
+  // Thứ 6
+  { dayOfWeek: 5, startTime: "08:00", endTime: "10:00", className: "Đại trà - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 5, startTime: "10:00", endTime: "12:00", className: "Đại trà - 4", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 5, startTime: "14:00", endTime: "16:00", className: "Chuyên - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 5, startTime: "18:00", endTime: "20:00", className: "Chuyên - 2", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
+  { dayOfWeek: 5, startTime: "20:00", endTime: "22:00", className: "Luyện thi - 1", teacherName: "Lê Hoàng Nam", type: "online", color: "#2563EB" },
+
+  // Thứ 7
+  { dayOfWeek: 6, startTime: "08:00", endTime: "10:00", className: "Đại trà - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 6, startTime: "10:00", endTime: "12:00", className: "Đại trà - 4", teacherName: "Lê Hoàng Nam", type: "offline", color: "#2563EB" },
+  { dayOfWeek: 6, startTime: "14:00", endTime: "16:00", className: "Đại trà - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 6, startTime: "16:00", endTime: "18:00", className: "Đại trà - 5", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
+  { dayOfWeek: 6, startTime: "18:00", endTime: "20:00", className: "Chuyên - 1", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+
+  // Chủ nhật
+  { dayOfWeek: 0, startTime: "08:00", endTime: "10:00", className: "Đại trà - 6", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" },
+  { dayOfWeek: 0, startTime: "10:00", endTime: "12:00", className: "Online - 1", teacherName: "Trần Thị Mai", type: "online", color: "#7C3AED" },
+  { dayOfWeek: 0, startTime: "14:00", endTime: "16:00", className: "Đại trà - 3", teacherName: "Đỗ Quang Huy", type: "offline", color: "#059669" },
+  { dayOfWeek: 0, startTime: "18:00", endTime: "20:00", className: "Chuyên - 2", teacherName: "Trần Thị Mai", type: "offline", color: "#7C3AED" }
 ];
 
+
 export const teacherPayroll = [
-  { teacherName: "Trần Thị Mai", type: "main" as const, month: "01/2025", sessions: 18, hours: 36, salary: { base: 4000000, bonus: 2700000, total: 6700000 } },
-  { teacherName: "Lê Hoàng Nam", type: "main" as const, month: "01/2025", sessions: 20, hours: 40, salary: { base: 4500000, bonus: 3200000, total: 7700000 } },
-  { teacherName: "Đỗ Quang Huy", type: "main" as const, month: "01/2025", sessions: 16, hours: 32, salary: { base: 4000000, bonus: 2400000, total: 6400000 } },
-  { teacherName: "Phạm Minh Tú", type: "assistant" as const, month: "01/2025", sessions: 0, hours: 40, salary: { hourlyRate: 60000, total: 2400000 } },
-  { teacherName: "Ngô Thanh Hà", type: "assistant" as const, month: "01/2025", sessions: 0, hours: 36, salary: { hourlyRate: 55000, total: 1980000 } }
+  { id: "PAY-001", teacherName: "Trần Thị Mai", type: "main" as const, month: "03/2025", sessions: 22, hours: 44.5, salary: { base: 4500000, bonus: 3200000, total: 7700000 }, status: "paid" },
+  { id: "PAY-002", teacherName: "Lê Hoàng Nam", type: "main" as const, month: "03/2025", sessions: 20, hours: 40, salary: { base: 4500000, bonus: 3200000, total: 7700000 }, status: "unpaid" },
+  { id: "PAY-003", teacherName: "Đỗ Quang Huy", type: "main" as const, month: "03/2025", sessions: 16, hours: 32, salary: { base: 4000000, bonus: 2400000, total: 6400000 }, status: "paid" },
+  { id: "PAY-004", teacherName: "Phạm Minh Tú", type: "assistant" as const, month: "03/2025", sessions: 0, hours: 40, salary: { hourlyRate: 60000, total: 2400000 }, status: "pending" },
+];
+
+export const teacherAttendanceLogs = [
+  { date: "2025-03-01", checkIn: "07:55", checkOut: "12:05", totalHours: 4.2, location: "MENGLISH BA ĐÌNH", status: "on-time", note: "Ca sáng" },
+  { date: "2025-03-03", checkIn: "08:15", checkOut: "11:55", totalHours: 3.7, location: "MENGLISH BA ĐÌNH", status: "late", note: "Muộn 15p" },
+  { date: "2025-03-04", checkIn: "13:58", checkOut: "18:02", totalHours: 4.1, location: "MENGLISH BA ĐÌNH", status: "on-time", note: "Ca chiều" },
+  { date: "2025-03-06", checkIn: "17:50", checkOut: "21:30", totalHours: 3.8, location: "MENGLISH BA ĐÌNH", status: "on-time", note: "Ca tối" },
+  { date: "2025-03-08", checkIn: "07:50", checkOut: "12:10", totalHours: 4.3, location: "MENGLISH BA ĐÌNH", status: "on-time", note: "Ca sáng" },
+  { date: "2025-03-10", checkIn: "08:05", checkOut: "12:00", totalHours: 4.0, location: "MENGLISH BA ĐÌNH", status: "late", note: "Muộn 5p" },
+  { date: "2025-03-11", checkIn: "13:45", checkOut: "17:55", totalHours: 4.2, location: "MENGLISH BA ĐÌNH", status: "on-time", note: "Ca chiều" },
 ];
 
 export const communityPosts = [
-  { id: "post-001", authorName: "Trần Thị Mai", authorRole: "teacher", content: "Các em lớp 9A ôn tập Lặng lẽ Sa Pa cho kiểm tra tuần sau! Cô đã cập nhật tài liệu mới trong thư viện.", likes: 15, comments: [
+  { id: "post-001", authorName: "Trần Thị Mai", authorRole: "teacher", content: "Các em lớp chuyên ôn tập Lặng lẽ Sa Pa cho kiểm tra tuần sau! Cô đã cập nhật tài liệu mới trong thư viện.", likes: 15, comments: [
     { authorName: "Nguyễn Minh Khôi", authorRole: "student", content: "Dạ em cảm ơn cô nhiều ạ!", createdAt: "2025-01-25 20:15" },
     { authorName: "Nguyễn Thị Lan", authorRole: "parent", content: "Cảm ơn cô đã tận tình nhắc nhở các con.", createdAt: "2025-01-25 21:00" }
   ], createdAt: "2025-01-25 18:30", isPinned: true },

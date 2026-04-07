@@ -23,10 +23,10 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="text-center max-w-2xl w-full">
         <div className="mb-2">
-          <span className="text-4xl font-bold tracking-tight text-foreground">Trung tâm Giáo dục</span>
+          <span className="text-4xl font-bold tracking-tight text-foreground">Tanthanh Edu</span>
         </div>
         <h1 className="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-admin via-teacher to-parent bg-clip-text text-transparent mb-3">
-          ABC
+          Tanthanh Edu
         </h1>
         <p className="text-muted-foreground mb-10 text-lg">Chọn vai trò để đăng nhập</p>
 

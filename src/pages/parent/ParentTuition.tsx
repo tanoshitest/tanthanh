@@ -33,7 +33,7 @@ const ParentTuition = () => {
         <CardContent className="text-sm space-y-2">
           <p>Ngân hàng: <strong>Vietcombank</strong></p>
           <p>STK: <strong>1234567890</strong></p>
-          <p>Chủ TK: <strong>TRUNG TAM GIAO DUC ABC</strong></p>
+          <p>Chủ TK: <strong>TANTHANH EDU</strong></p>
           <p>Nội dung CK: <strong>HP {child.name} T01/2025</strong></p>
         </CardContent>
       </Card>

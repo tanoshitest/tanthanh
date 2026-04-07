@@ -27,3 +27,32 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => set({ role: null, userName: "", userId: "" }),
   setSelectedChildId: (id) => set({ selectedChildId: id }),
 }));
+
+export interface LeaveRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  sessionId: string;
+  sessionDate: string;
+  sessionTopic: string;
+  classId: string;
+  className: string;
+  reason: string;
+  submittedAt: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+interface LeaveStore {
+  requests: LeaveRequest[];
+  addRequest: (req: LeaveRequest) => void;
+  updateStatus: (id: string, status: "approved" | "rejected") => void;
+}
+
+export const useLeaveStore = create<LeaveStore>((set) => ({
+  requests: [],
+  addRequest: (req) => set((state) => ({ requests: [...state.requests, req] })),
+  updateStatus: (id, status) =>
+    set((state) => ({
+      requests: state.requests.map((r) => (r.id === id ? { ...r, status } : r)),
+    })),
+}));

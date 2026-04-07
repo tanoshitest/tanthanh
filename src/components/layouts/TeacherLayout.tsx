@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 const items = [
   { title: "Lớp của tôi", url: "/teacher/classes", icon: BookOpen },
   { title: "Chấm công của tôi", url: "/teacher/my-attendance", icon: Clock },
-  { title: "Lịch dạy", url: "/teacher/schedule", icon: Calendar },
+  { title: "Lịch dạy của tôi", url: "/teacher/schedule", icon: Calendar },
   { title: "Cộng đồng", url: "/teacher/community", icon: MessageSquare },
 ];
 
@@ -65,7 +65,7 @@ const TeacherLayout = () => {
           <header className="h-14 flex items-center justify-between border-b px-4 bg-card">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              <span className="font-semibold text-sm hidden sm:block">Trung tâm Giáo dục ABC</span>
+              <span className="font-semibold text-sm hidden sm:block">Tanthanh Edu</span>
             </div>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">

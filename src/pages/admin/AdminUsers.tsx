@@ -1,10 +1,36 @@
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { mainTeachers as initialTeachers, assistants as initialAssistants, accountants as initialAccountants, parentStudentAccounts as initialParents, classes as initialClasses } from "@/lib/mock-data";
-import { Search, Plus, UserPlus, GraduationCap, Users, BookOpen, Monitor, Award, Star, UserCheck, ChevronRight } from "lucide-react";
+import { 
+  mainTeachers as initialTeachers, 
+  assistants as initialAssistants, 
+  accountants as initialAccountants, 
+  parentStudentAccounts as initialParents, 
+  classes as initialClasses 
+} from "@/lib/mock-data";
+import { 
+  Search, 
+  Plus, 
+  UserPlus, 
+  GraduationCap, 
+  Users, 
+  ChevronRight,
+  Filter,
+  UserCheck,
+  UserCog,
+  Briefcase,
+  Contact2,
+  Settings2,
+  GraduationCap as StudentIcon
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,383 +50,329 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const statusBadge = (s: string) => {
-  if (s === "active") return <Badge className="bg-status-success">Hoạt động</Badge>;
-  if (s === "on_leave") return <Badge className="bg-status-warning">Nghỉ phép</Badge>;
-  return <Badge variant="destructive">Tạm ngưng</Badge>;
+  if (s === "active") return <Badge className="bg-emerald-500/10 text-emerald-600 border-none shadow-none text-[10px] font-black tracking-tight px-2 h-5">HOẠT ĐỘNG</Badge>;
+  if (s === "on_leave") return <Badge className="bg-amber-500/10 text-amber-600 border-none shadow-none text-[10px] font-black tracking-tight px-2 h-5">NGHỈ PHÉP</Badge>;
+  return <Badge variant="destructive" className="border-none shadow-none text-[10px] font-black tracking-tight px-2 h-5 uppercase">TẠM NGƯNG</Badge>;
+};
+
+const roleBadge = (role: string) => {
+  const map: Record<string, { label: string, color: string, icon: any }> = {
+    student: { label: "Học sinh", color: "bg-blue-500/10 text-blue-600", icon: GraduationCap },
+    teacher: { label: "Giáo viên", color: "bg-purple-500/10 text-purple-600", icon: UserCheck },
+    assistant: { label: "Trợ giảng", color: "bg-orange-500/10 text-orange-600", icon: UserCog },
+    accountant: { label: "Kế toán", color: "bg-slate-500/10 text-slate-600", icon: Briefcase },
+  };
+  const info = map[role] || map.student;
+  const Icon = info.icon;
+  return (
+    <Badge className={`${info.color} border-none shadow-none text-[9px] font-black uppercase tracking-widest px-2 h-5 gap-1`}>
+      <Icon className="h-3 w-3" /> {info.label}
+    </Badge>
+  );
 };
 
 const AdminUsers = () => {
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterClassId, setFilterClassId] = useState("all");
+  const [activeTab, setActiveTab] = useState("students");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [userRole, setUserRole] = useState("student");
+  const [newUserRole, setNewUserRole] = useState("student");
 
-  // Local user states
-  const [teachers, setTeachers] = useState(initialTeachers);
-  const [assistants, setAssistants] = useState(initialAssistants);
-  const [accountants, setAccountants] = useState(initialAccountants);
-  const [parents, setParents] = useState(initialParents);
-  const [classList, setClassList] = useState(initialClasses);
+  // Local user states (mock only)
+  const [teachers] = useState(initialTeachers);
+  const [assistants] = useState(initialAssistants);
+  const [accountants] = useState(initialAccountants);
+  const [parents] = useState(initialParents);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    grade: "9",
-    level: "beginner",
-    dateOfBirth: "2011-01-01",
-    parentName: "",
-    parentPhone: "",
-    subject: "Văn",
-    baseSalary: "4000000",
-    rate: "150000"
-  });
+  // Data Preparation
+  const studentList = useMemo(() => {
+    return parents.flatMap((p) =>
+      p.children.map((c) => ({ 
+        ...c, 
+        role: "student", 
+        parentName: p.name, 
+        contact: p.phone,
+        email: p.email,
+        details: `Lớp ${c.grade} • ${c.level.toUpperCase()}`
+      }))
+    );
+  }, [parents]);
 
-  const students = parents.flatMap((p) =>
-    p.children.map((c) => ({ ...c, parentName: p.name, parentPhone: p.phone }))
-  );
+  const staffList = useMemo(() => {
+    const list = [
+      ...teachers.map(t => ({ ...t, role: "teacher", contact: t.phone, details: `${t.subject} (GV Chính)` })),
+      ...assistants.map(a => ({ ...a, role: "assistant", contact: a.phone, details: `${a.subject} (Trợ giảng)` })),
+      ...accountants.map(a => ({ ...a, role: "accountant", contact: a.phone, details: "Kế toán trung tâm" }))
+    ];
+    return list;
+  }, [teachers, assistants, accountants]);
 
-  const handleAddUser = () => {
-    if (!formData.name) {
-      toast.error("Vui lòng nhập tên");
-      return;
-    }
+  // Filtering Logic
+  const filteredStudents = useMemo(() => {
+    return studentList.filter(s => {
+      const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.contact?.includes(search);
+      let matchesCategory = true;
+      if (filterCategory !== "all") {
+        const classes = initialClasses.filter(c => s.classes?.includes(c.id));
+        matchesCategory = classes.some(c => c.category === filterCategory);
+      }
+      const matchesClass = filterClassId === "all" || s.classes?.includes(filterClassId);
+      return matchesSearch && matchesCategory && matchesClass;
+    });
+  }, [studentList, search, filterCategory, filterClassId]);
 
-    const newId = `user-${Date.now()}`;
+  const filteredStaff = useMemo(() => {
+    return staffList.filter(s => {
+      const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || s.contact?.includes(search);
+      const matchesRole = filterRole === "all" || s.role === filterRole;
+      return matchesSearch && matchesRole;
+    });
+  }, [staffList, search, filterRole]);
 
-    if (userRole === "student") {
-      const newStudent = {
-        id: `hs-${Date.now()}`,
-        name: formData.name,
-        grade: parseInt(formData.grade),
-        level: formData.level as any,
-        classes: [],
-        dateOfBirth: formData.dateOfBirth,
-        status: "active" as const
-      };
-      // For mock, create new parent entry
-      const newParent = {
-        id: `ph-${Date.now()}`,
-        name: formData.parentName || "Phụ huynh mới",
-        email: formData.email,
-        phone: formData.parentPhone || formData.phone,
-        zaloPhone: formData.parentPhone || formData.phone,
-        children: [newStudent]
-      };
-      setParents([newParent, ...parents]);
-    } else if (userRole === "teacher") {
-      const newTeacher = {
-        id: `gv-${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        type: "main" as const,
-        phone: formData.phone,
-        subject: formData.subject,
-        baseSalary: parseInt(formData.baseSalary),
-        perSessionRate: parseInt(formData.rate),
-        sessionsThisMonth: 0,
-        status: "active" as const
-      };
-      setTeachers([newTeacher, ...teachers]);
-    } else if (userRole === "assistant") {
-      const newAssistant = {
-        id: `tg-${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        type: "assistant" as const,
-        phone: formData.phone,
-        subject: formData.subject,
-        hourlyRate: parseInt(formData.rate),
-        hoursThisMonth: 0,
-        status: "active" as const
-      };
-      setAssistants([newAssistant, ...assistants]);
-    } else if (userRole === "accountant") {
-      const newAccountant = {
-        id: `kt-${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        status: "active" as const,
-        baseSalary: parseInt(formData.baseSalary)
-      };
-      setAccountants([newAccountant, ...accountants]);
-    }
+  const availableClasses = useMemo(() => {
+    if (filterCategory === "all") return initialClasses;
+    return initialClasses.filter(c => c.category === filterCategory);
+  }, [filterCategory]);
 
-    setIsDialogOpen(false);
-    toast.success(`Đã thêm ${formData.name} thành công!`);
-    // Reset name for next time
-    setFormData({ ...formData, name: "" });
+  const handleResetFilters = () => {
+    setSearch("");
+    setFilterRole("all");
+    setFilterCategory("all");
+    setFilterClassId("all");
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Quản lý User</h1>
-        
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-admin hover:bg-admin/90 shadow-md transition-all active:scale-95">
-              <Plus className="mr-2 h-4 w-4" /> Thêm User
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-admin" /> Thêm User mới
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
-              <div className="space-y-2 pb-2 border-b">
-                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Vai trò</Label>
-                <Select value={userRole} onValueChange={setUserRole}>
-                  <SelectTrigger className="w-full bg-muted/30 border-none">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Học sinh</SelectItem>
-                    <SelectItem value="teacher">Giáo viên</SelectItem>
-                    <SelectItem value="assistant">Trợ giảng</SelectItem>
-                    <SelectItem value="accountant">Kế toán</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">Họ và tên</Label>
-                  <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Nguyễn Văn A" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Số điện thoại</Label>
-                  <Input value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="09xxxxxxx" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">Email</Label>
-                <Input value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="email@example.com" />
-              </div>
-
-              {userRole === "student" && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs">Khối lớp</Label>
-                      <Select value={formData.grade} onValueChange={(v) => setFormData({...formData, grade: v})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {[6,7,8,9,10,11,12].map(g => <SelectItem key={g} value={g.toString()}>{g}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">Cấp độ</Label>
-                      <Select value={formData.level} onValueChange={(v) => setFormData({...formData, level: v})}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="beginner">Sơ cấp</SelectItem>
-                          <SelectItem value="intermediate">Trung cấp</SelectItem>
-                          <SelectItem value="advanced">Cao cấp</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Ngày sinh</Label>
-                    <Input type="date" value={formData.dateOfBirth} onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})} />
-                  </div>
-                  <div className="p-3 bg-muted/20 rounded-lg space-y-3 border border-dashed border-muted">
-                    <p className="text-xs font-bold flex items-center gap-2"><Users className="h-3 w-3" /> Thông tin phụ huynh</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-[10px]">Tên phụ huynh</Label>
-                        <Input className="h-8 text-sm" value={formData.parentName} onChange={(e) => setFormData({...formData, parentName: e.target.value})} />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px]">SĐT phụ huynh</Label>
-                        <Input className="h-8 text-sm" value={formData.parentPhone} onChange={(e) => setFormData({...formData, parentPhone: e.target.value})} />
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {(userRole === "teacher" || userRole === "assistant") && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Môn học phụ trách</Label>
-                    <Select value={formData.subject} onValueChange={(v) => setFormData({...formData, subject: v})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Văn">Văn</SelectItem>
-                        <SelectItem value="Toán">Toán</SelectItem>
-                        <SelectItem value="Anh">Anh</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">{userRole === "teacher" ? "Lương cơ bản" : "Lương theo giờ"}</Label>
-                    <Input type="number" value={userRole === "teacher" ? formData.baseSalary : formData.rate} onChange={(e) => setFormData({...formData, [userRole === "teacher" ? 'baseSalary' : 'rate']: e.target.value})} />
-                  </div>
-                </div>
-              )}
-
-              {userRole === "accountant" && (
-                <div className="space-y-2">
-                  <Label className="text-xs">Lương cơ bản</Label>
-                  <Input type="number" value={formData.baseSalary} onChange={(e) => setFormData({...formData, baseSalary: e.target.value})} />
-                </div>
-              )}
-            </div>
-            <DialogFooter className="border-t pt-4">
-              <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
-              <Button className="bg-admin w-full sm:w-auto" onClick={handleAddUser}>Lưu thông tin</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-muted/20 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Quản lý thành viên</h1>
+          <p className="text-sm text-muted-foreground font-medium mt-1 italic">Hệ thống quản lý học viên và nhân sự vận hành trung tâm</p>
+        </div>
+        <Button className="bg-admin hover:bg-admin/90 shadow-lg shadow-admin/20 rounded-full h-12 px-8 font-black text-xs uppercase tracking-widest transition-all" onClick={() => setIsDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> THÊM THÀNH VIÊN
+        </Button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Tìm kiếm..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-11 border-none bg-muted/30 focus-visible:ring-admin" />
-      </div>
-
-      <Tabs defaultValue="dai-tra">
-        <TabsList className="bg-muted/30 p-1 flex-wrap h-auto">
-          <TabsTrigger value="kem" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp Kèm</TabsTrigger>
-          <TabsTrigger value="luyen-thi" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp luyện thi</TabsTrigger>
-          <TabsTrigger value="dai-tra" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp đại trà</TabsTrigger>
-          <TabsTrigger value="chuyen" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp chuyên</TabsTrigger>
-          <TabsTrigger value="online" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold">Lớp online</TabsTrigger>
-          <TabsTrigger value="staff" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-[11px] font-bold bg-admin/5 text-admin">Nhân sự ({teachers.length + assistants.length + accountants.length})</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); handleResetFilters(); }}>
+        <TabsList className="bg-muted/10 p-1 mb-6 rounded-2xl h-auto flex flex-wrap gap-1">
+          <TabsTrigger value="students" className="rounded-xl flex-1 md:flex-none py-3 px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-admin font-black text-xs uppercase tracking-widest transition-all">
+            <StudentIcon className="h-4 w-4 mr-2" /> Học viên
+          </TabsTrigger>
+          <TabsTrigger value="staff" className="rounded-xl flex-1 md:flex-none py-3 px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-indigo-600 font-black text-xs uppercase tracking-widest transition-all">
+            <Settings2 className="h-4 w-4 mr-2" /> Vận hành
+          </TabsTrigger>
         </TabsList>
 
-        {(["kem", "luyen-thi", "dai-tra", "chuyen", "online"] as const).map((cat) => (
-          <TabsContent key={cat} value={cat} className="mt-6 space-y-6">
-            <div className="grid gap-6">
-              {classList.filter(c => c.category === cat).map(cls => (
-                <div key={cls.id} className="space-y-3">
-                  <div className="flex items-center gap-2 px-1">
-                    <div className="h-2 w-2 rounded-full bg-admin animate-pulse" />
-                    <h3 className="font-black text-sm uppercase tracking-tight text-slate-700">{cls.name}</h3>
-                    <Badge variant="outline" className="text-[10px] h-5 bg-white border-muted/50">{cls.studentCount} học sinh</Badge>
-                  </div>
-                  
-                  <div className="grid gap-3">
-                    {students
-                      .filter(s => s.classes.includes(cls.id))
-                      .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
-                      .map(s => (
-                        <Card key={s.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/student/${s.id}`)}>
-                          <CardContent className="flex items-center justify-between p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-2xl bg-admin/10 flex items-center justify-center text-admin font-black text-lg rotate-3 group-hover:rotate-0 transition-transform">
-                                {s.name.charAt(0)}
-                              </div>
-                              <div>
-                                <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{s.name}</p>
-                                <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-2">
-                                  <GraduationCap className="h-3.5 w-3.5 text-admin" /> Khối {s.grade} • {s.level.toUpperCase()} • PH: {s.parentName}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              {statusBadge(s.status)}
-                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-admin transition-colors" />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    {students.filter(s => s.classes.includes(cls.id)).length === 0 && (
-                      <p className="text-xs text-muted-foreground italic px-4 py-8 bg-muted/5 rounded-2xl border border-dashed text-center">Chưa có học sinh trong lớp này</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {classList.filter(c => c.category === cat).length === 0 && (
-                <div className="text-center py-20 bg-muted/5 rounded-3xl border-2 border-dashed">
-                  <BookOpen className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
-                  <p className="text-sm font-bold text-muted-foreground/60">Chưa có lớp học nào trong danh mục này</p>
-                </div>
-              )}
+        <TabsContent value="students" className="mt-0 space-y-6">
+          <div className="grid gap-4 md:grid-cols-4 items-end bg-card p-5 rounded-[2rem] border border-muted/20 shadow-sm">
+            <div className="col-span-2 space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1">Tìm kiếm học viên</Label>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Họ tên, SĐT hoặc Email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-11 h-12 rounded-2xl border-muted/30 focus-visible:ring-admin bg-muted/5 font-medium" />
+              </div>
             </div>
-          </TabsContent>
-        ))}
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1">Danh mục lớp</Label>
+              <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setFilterClassId("all"); }}>
+                <SelectTrigger className="h-12 rounded-2xl border-muted/30 bg-muted/5 font-medium focus:ring-admin">
+                  <SelectValue placeholder="Tất cả loại lớp" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="all">Tất cả loại lớp</SelectItem>
+                  <SelectItem value="kem">Lớp Kèm</SelectItem>
+                  <SelectItem value="luyen-thi">Lớp luyện thi</SelectItem>
+                  <SelectItem value="dai-tra">Lớp đại trà</SelectItem>
+                  <SelectItem value="chuyen">Lớp chuyên</SelectItem>
+                  <SelectItem value="online">Lớp online</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1">Lớp chi tiết</Label>
+              <Select value={filterClassId} onValueChange={setFilterClassId}>
+                <SelectTrigger className="h-12 rounded-2xl border-muted/30 bg-muted/5 font-medium focus:ring-admin">
+                  <SelectValue placeholder="Chọn lớp..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="all">Tất cả lớp học</SelectItem>
+                  {availableClasses.map(cls => (
+                    <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        <TabsContent value="staff" className="mt-6">
-          <Tabs defaultValue="teachers_staff">
-            <TabsList className="bg-muted/30 p-1 mb-4 h-9">
-              <TabsTrigger value="teachers_staff" className="data-[state=active]:bg-white text-[10px] h-7">Giáo viên ({teachers.length})</TabsTrigger>
-              <TabsTrigger value="assistants_staff" className="data-[state=active]:bg-white text-[10px] h-7">Trợ giảng ({assistants.length})</TabsTrigger>
-              <TabsTrigger value="accountants_staff" className="data-[state=active]:bg-white text-[10px] h-7">Kế toán ({accountants.length})</TabsTrigger>
-            </TabsList>
+          <div className="overflow-hidden bg-white rounded-[2rem] border border-muted/20 shadow-sm">
+            <Table>
+              <TableHeader className="bg-muted/5">
+                <TableRow className="hover:bg-transparent border-muted/10">
+                  <TableHead className="w-[300px] text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-8 py-5">Học viên</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Thông tin lớp</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">Vai trò</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Liên hệ</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">Trạng thái</TableHead>
+                  <TableHead className="w-[60px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.length > 0 ? filteredStudents.map((m) => (
+                  <TableRow key={m.id} className="group hover:bg-muted/5 border-muted/10 cursor-pointer transition-colors h-20" onClick={() => navigate(`/admin/users/${m.role}/${m.id}`)}>
+                    <TableCell className="pl-8">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 ring-1 ring-muted/20">
+                          <AvatarFallback className="bg-blue-50 text-blue-600 font-black text-xs uppercase">{m.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-bold text-slate-800 group-hover:text-admin transition-colors">{m.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell><span className="text-xs font-semibold text-slate-600">{m.details}</span></TableCell>
+                    <TableCell className="text-center">{roleBadge(m.role)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col"><span className="text-xs font-bold text-slate-700">{m.contact}</span><span className="text-[10px] text-muted-foreground font-medium">{m.email}</span></div>
+                    </TableCell>
+                    <TableCell className="text-center">{statusBadge(m.status || "active")}</TableCell>
+                    <TableCell className="pr-8"><ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-admin group-hover:translate-x-1 transition-all" /></TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow><TableCell colSpan={6} className="h-60 text-center"><div className="flex flex-col items-center justify-center text-muted-foreground gap-3"><Filter className="h-12 w-12 text-muted/20" /><p className="font-bold text-sm">Không tìm thấy học viên phù hợp</p></div></TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
 
-            <TabsContent value="teachers_staff" className="space-y-3">
-              {teachers.filter((t) => t.name.toLowerCase().includes(search.toLowerCase())).map((t) => (
-                <Card key={t.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/teacher/${t.id}`)}>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-lg">
-                        {t.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{t.name}</p>
-                        <p className="text-[11px] text-muted-foreground font-medium">{t.subject} • {t.sessionsThisMonth} buổi/tháng</p>
-                      </div>
-                    </div>
-                    {statusBadge(t.status)}
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
+        <TabsContent value="staff" className="mt-0 space-y-6">
+          <div className="grid gap-4 md:grid-cols-3 items-end bg-card p-5 rounded-[2rem] border border-muted/20 shadow-sm">
+            <div className="col-span-2 space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1">Tìm kiếm nhân sự</Label>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Họ tên, SĐT hoặc Email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-11 h-12 rounded-2xl border-muted/30 focus-visible:ring-indigo-600 bg-muted/5 font-medium" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground ml-1">Vị trí</Label>
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger className="h-12 rounded-2xl border-muted/30 bg-muted/5 font-medium focus:ring-indigo-600">
+                  <SelectValue placeholder="Tất cả vị trí" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="all">Tất cả vị trí</SelectItem>
+                  <SelectItem value="teacher">Giáo viên</SelectItem>
+                  <SelectItem value="assistant">Trợ giảng</SelectItem>
+                  <SelectItem value="accountant">Kế toán</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <TabsContent value="assistants_staff" className="space-y-3">
-              {assistants.filter((a) => a.name.toLowerCase().includes(search.toLowerCase())).map((a) => (
-                <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/assistant/${a.id}`)}>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 font-black text-lg">
-                        {a.name.charAt(0)}
+          <div className="overflow-hidden bg-white rounded-[2rem] border border-muted/20 shadow-sm">
+            <Table>
+              <TableHeader className="bg-muted/5">
+                <TableRow className="hover:bg-transparent border-muted/10">
+                  <TableHead className="w-[300px] text-[10px] font-black uppercase text-muted-foreground tracking-widest pl-8 py-5">Nhân sự vận hành</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Phụ trách</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">Vai trò</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Liên hệ</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">Trạng thái</TableHead>
+                  <TableHead className="w-[60px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStaff.length > 0 ? filteredStaff.map((m) => (
+                  <TableRow key={m.id} className="group hover:bg-muted/5 border-muted/10 cursor-pointer transition-colors h-20" onClick={() => navigate(`/admin/users/${m.role}/${m.id}`)}>
+                    <TableCell className="pl-8">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 ring-1 ring-muted/20">
+                          <AvatarFallback className={`font-black text-xs uppercase ${
+                            m.role === 'teacher' ? 'bg-purple-50 text-purple-600' :
+                            m.role === 'assistant' ? 'bg-orange-50 text-orange-600' :
+                            'bg-slate-50 text-slate-600'
+                          }`}>{m.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{m.name}</span>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{a.name}</p>
-                        <p className="text-[11px] text-muted-foreground font-medium">{a.subject} • {a.hoursThisMonth}h/tháng</p>
-                      </div>
-                    </div>
-                    {statusBadge(a.status)}
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-
-            <TabsContent value="accountants_staff" className="space-y-3">
-              {accountants.filter((a) => a.name.toLowerCase().includes(search.toLowerCase())).map((a) => (
-                <Card key={a.id} className="cursor-pointer hover:shadow-md transition-all hover:bg-muted/5 group border-none shadow-sm ring-1 ring-muted/20" onClick={() => navigate(`/admin/users/accountant/${a.id}`)}>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 font-black text-lg">
-                        {a.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 group-hover:text-admin transition-colors">{a.name}</p>
-                        <p className="text-[11px] text-muted-foreground font-medium">{a.email}</p>
-                      </div>
-                    </div>
-                    {statusBadge(a.status)}
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-          </Tabs>
+                    </TableCell>
+                    <TableCell><span className="text-xs font-semibold text-slate-600">{m.details}</span></TableCell>
+                    <TableCell className="text-center">{roleBadge(m.role)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col"><span className="text-xs font-bold text-slate-700">{m.contact}</span><span className="text-[10px] text-muted-foreground font-medium">{m.email}</span></div>
+                    </TableCell>
+                    <TableCell className="text-center">{statusBadge(m.status || "active")}</TableCell>
+                    <TableCell className="pr-8"><ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" /></TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow><TableCell colSpan={6} className="h-60 text-center"><div className="flex flex-col items-center justify-center text-muted-foreground gap-3"><Filter className="h-12 w-12 text-muted/20" /><p className="font-bold text-sm">Không tìm thấy nhân sự phù hợp</p></div></TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] border-none shadow-2xl rounded-[2.5rem]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-black text-slate-800">
+              <UserPlus className="h-6 w-6 text-admin" /> Thêm thành viên mới
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-5 py-4 max-h-[75vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 pb-3 border-b border-muted/10">
+              <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Chọn vai trò</Label>
+              <div className="flex gap-2">
+                {['student', 'teacher', 'assistant', 'accountant'].map((r) => (
+                  <Button key={r} variant={newUserRole === r ? "default" : "outline"} className={`flex-1 h-10 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                    newUserRole === r ? 'bg-admin ring-2 ring-admin/20 shadow-lg' : 'bg-muted/10 border-transparent hover:bg-muted/20'
+                  }`} onClick={() => setNewUserRole(r)}>
+                    {r === 'student' ? 'Học sinh' : r === 'teacher' ? 'G.Viên' : r === 'assistant' ? 'T.Giảng' : 'K.Toán'}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Họ và tên</Label><Input className="h-11 rounded-xl border-muted/30 focus-visible:ring-admin" placeholder="Nguyễn Văn A" /></div>
+              <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Số điện thoại</Label><Input className="h-11 rounded-xl border-muted/30 focus-visible:ring-admin" placeholder="09xxxxxxx" /></div>
+            </div>
+            {newUserRole === "student" && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Khối lớp</Label><Select defaultValue="9"><SelectTrigger className="rounded-xl h-11 border-muted/30"><SelectValue /></SelectTrigger><SelectContent className="rounded-xl">{[6,7,8,9,10,11,12].map(g => <SelectItem key={g} value={g.toString()}>Lớp {g}</SelectItem>)}</SelectContent></Select></div>
+                   <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Trình độ</Label><Select defaultValue="beginner"><SelectTrigger className="rounded-xl h-11 border-muted/30"><SelectValue /></SelectTrigger><SelectContent className="rounded-xl"><SelectItem value="beginner">Sơ cấp</SelectItem><SelectItem value="intermediate">Trung cấp</SelectItem><SelectItem value="advanced">Cao cấp</SelectItem></SelectContent></Select></div>
+                </div>
+                <div className="p-4 bg-muted/10 rounded-3xl space-y-4 border border-muted/20">
+                  <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-slate-700"><Contact2 className="h-4 w-4 text-admin" /> Thông tin phụ huynh</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">Tên phụ huynh</Label><Input className="h-10 text-xs rounded-xl border-muted/30" /></div>
+                    <div className="space-y-1"><Label className="text-[9px] font-black uppercase text-muted-foreground ml-1">SĐT phụ huynh</Label><Input className="h-10 text-xs rounded-xl border-muted/30" /></div>
+                  </div>
+                </div>
+              </>
+            )}
+            {(newUserRole === "teacher" || newUserRole === "assistant") && (
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Môn học</Label><Select defaultValue="Văn"><SelectTrigger className="rounded-xl h-11 border-muted/30"><SelectValue /></SelectTrigger><SelectContent className="rounded-xl"><SelectItem value="Văn">Văn học</SelectItem><SelectItem value="Toán">Toán học</SelectItem><SelectItem value="Anh">Tiếng Anh</SelectItem></SelectContent></Select></div>
+                 <div className="space-y-2"><Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Lương</Label><Input type="number" className="h-11 rounded-xl border-muted/30 focus-visible:ring-admin" /></div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:justify-center pt-2">
+            <Button variant="ghost" className="rounded-full px-8 font-bold" onClick={() => setIsDialogOpen(false)}>Hủy bỏ</Button>
+            <Button className="bg-admin rounded-full px-12 font-black text-[11px] uppercase tracking-widest shadow-xl shadow-admin/20" onClick={() => {toast.success("Đã thêm thành công!"); setIsDialogOpen(false);}}>Lưu thông tin</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default AdminUsers;
-

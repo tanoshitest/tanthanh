@@ -11,13 +11,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const items = [
-  { title: "Quản lý User", url: "/admin/users", icon: Users },
+  { title: "Quản lý thành viên", url: "/admin/users", icon: Users },
   { title: "Quản lý lớp học", url: "/admin/classes", icon: BookOpen },
-  { title: "Báo cáo", url: "/admin/reports", icon: BarChart3 },
-  { title: "Lịch dạy", url: "/admin/schedule", icon: Calendar },
-  { title: "Cộng đồng", url: "/admin/community", icon: MessageSquare },
-  { title: "Thư viện tài liệu", url: "/admin/library", icon: Library },
-  { title: "Cài đặt", url: "/admin/settings", icon: Settings },
+  { title: "Báo cáo lịch dạy", url: "/admin/schedule", icon: Calendar },
+  { title: "Báo cáo hệ thống", url: "/admin/reports", icon: BarChart3 },
+  { title: "Quản lý tài liệu", url: "/admin/library", icon: Library },
+  { title: "Quản lý cộng đồng", url: "/admin/community", icon: MessageSquare },
+  { title: "Cài đặt hệ thống", url: "/admin/settings", icon: Settings },
 ];
 
 function AdminSidebar() {
@@ -74,7 +74,7 @@ const AdminLayout = () => {
           <header className="h-14 flex items-center justify-between border-b px-4 bg-card">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              <span className="font-semibold text-sm hidden sm:block">Trung tâm Giáo dục ABC</span>
+              <span className="font-semibold text-sm hidden sm:block">Tanthanh Edu</span>
             </div>
             <div className="flex items-center gap-3">
               <Avatar className="h-8 w-8">

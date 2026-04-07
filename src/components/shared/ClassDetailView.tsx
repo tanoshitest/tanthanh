@@ -6,7 +6,7 @@ import {
   mainTeachers, assistants, parentStudentAccounts,
   practiceExams
 } from "@/lib/mock-data";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useLeaveStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from "recharts";
+import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import {
   Dialog,
@@ -59,6 +60,7 @@ interface Props {
 const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
   const navigate = useNavigate();
   const { selectedChildId } = useAuthStore();
+  const { requests: leaveRequests, updateStatus } = useLeaveStore();
   const isParent = rolePrefix === "/parent";
 
   const cls = classes.find((c) => c.id === classId);
@@ -88,6 +90,12 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
   // Challenge Config State
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [editingQuiz, setEditingQuiz] = useState<any>(null);
+
+  // Homework Upload Demo State
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadImages, setUploadImages] = useState<string[]>([]);
+  const [uploadNotes, setUploadNotes] = useState("");
+  const [submittingAssgnId, setSubmittingAssgnId] = useState<string | null>(null);
 
   // Persistence Effects
   useEffect(() => {
@@ -133,8 +141,13 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
   const evals = localEvals.filter((e: any) => e.sessionId === selectedSessionId);
   const sessionLessons = localLessons.filter((l) => selectedSession?.lessonId && l.id === selectedSession.lessonId);
   const sessionAssignments = assignmentList.filter((a) => a.sessionId === selectedSessionId);
-  
-  const filteredAttendance = attendance?.records.filter(r => !isParent || r.studentId === selectedChildId) || [];
+
+  // Merge leave requests: if a student has a leave request for this session, show as absent_excused
+  const sessionLeaveRequests = leaveRequests.filter(r => r.sessionId === selectedSessionId && r.classId === classId);
+  const filteredAttendance = (attendance?.records.filter((r: any) => !isParent || r.studentId === selectedChildId) || []).map((r: any) => {
+    const hasLeave = sessionLeaveRequests.find(lr => lr.studentId === r.studentId);
+    return hasLeave ? { ...r, status: "absent_excused" as const, note: `Đơn phép: ${hasLeave.reason}` } : r;
+  });
   const filteredEvals = evals.filter(e => !isParent || e.studentId === selectedChildId);
   const filteredAssignments = sessionAssignments.map(assgn => ({
     ...assgn,
@@ -164,6 +177,32 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
     setAssignmentList([...assignmentList, newAssgn]);
     setIsAddAssignmentOpen(false);
     toast.success(`Đã thêm bài tập: ${formData.title}`);
+  };
+
+  const handleMockUpload = () => {
+    const mockImageUrls = [
+      "https://images.unsplash.com/photo-1455390582262-044cdead277a?q=80&w=1000",
+      "https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=1000",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1000",
+      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000"
+    ];
+    const randomImg = mockImageUrls[Math.floor(Math.random() * mockImageUrls.length)];
+    setUploadImages([...uploadImages, randomImg]);
+    toast.success("Đã tải ảnh lên thành công!");
+  };
+
+  const handleSubmitHomework = () => {
+    if (uploadImages.length === 0) {
+      toast.error("Vui lòng đính kèm ít nhất 1 ảnh bài làm");
+      return;
+    }
+    
+    // In a real app, this would call an API. 
+    // Here we just simulate success.
+    setIsUploadDialogOpen(false);
+    setUploadImages([]);
+    setUploadNotes("");
+    toast.success("Đã nộp bài tập thành công!");
   };
 
   const handleUpdateQuiz = () => {
@@ -236,7 +275,7 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
             </TabsTrigger>
             <TabsTrigger value="lessons" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">Bài giảng</TabsTrigger>
             <TabsTrigger value="assignments" className="text-xs px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md transition-all">
-              Bài tập chờ chấm
+              {isParent ? "Nộp bài tập" : "Bài tập chờ chấm"}
               {!readonly && ungradedCount > 0 && (
                 <Badge variant="destructive" className="ml-1 text-[10px] h-4 min-w-[16px] px-1 animate-pulse">
                   {ungradedCount}
@@ -250,6 +289,50 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
 
           <TabsContent value="session-report" className="mt-4">
             <div className="space-y-4">
+              {/* Teacher: Leave Request Notifications */}
+              {!readonly && sessionLeaveRequests.length > 0 && (
+                <div className="rounded-3xl border border-amber-200 bg-amber-50 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-amber-200 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <span className="text-xs font-black uppercase text-amber-700 tracking-widest">
+                      {sessionLeaveRequests.length} Đơn xin nghỉ buổi học này
+                    </span>
+                  </div>
+                  {sessionLeaveRequests.map((req) => (
+                    <div key={req.id} className="p-4 flex items-center justify-between gap-4 border-b border-amber-100 last:border-0 bg-white/50">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-amber-100 flex items-center justify-center text-xs font-black text-amber-700">
+                          {req.studentName.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-slate-800">{req.studentName}</p>
+                          <p className="text-[10px] text-muted-foreground italic mt-0.5">Lý do: "{req.reason}"</p>
+                          <p className="text-[9px] text-muted-foreground font-medium mt-0.5">Gửi lúc: {req.submittedAt}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={cn(
+                          "text-[9px] font-black h-5 px-2",
+                          req.status === "pending" ? "bg-amber-400" : req.status === "approved" ? "bg-emerald-500" : "bg-rose-500"
+                        )}>
+                          {req.status === "pending" ? "Đang chờ" : req.status === "approved" ? "Đã duyệt" : "Từ chối"}
+                        </Badge>
+                        {req.status === "pending" && (
+                          <>
+                            <Button size="sm" className="h-7 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-[10px] font-black px-3" onClick={() => { updateStatus(req.id, "approved"); toast.success(`Đã duyệt đơn nghỉ của ${req.studentName}`); }}>
+                              Duyệt
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 rounded-xl border-rose-200 text-rose-500 hover:bg-rose-50 text-[10px] font-black px-3" onClick={() => { updateStatus(req.id, "rejected"); toast.info(`Đã từ chối đơn nghỉ của ${req.studentName}`); }}>
+                              Từ chối
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {filteredAttendance.length > 0 ? filteredAttendance.map((record) => {
                 const evalData = evals.find(e => e.studentId === record.studentId);
                 const radarData = evalData ? Object.entries(evalData.criteria).map(([k, v]) => ({ 
@@ -321,7 +404,7 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
                                 <div key={key} className="space-y-1.5">
                                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tight text-slate-600">
                                     <Label>{criteriaLabels[key]}</Label>
-                                    <span className="bg-admin/10 text-admin px-2 py-0.5 rounded-md font-black">{value}/10</span>
+                                    <span className="bg-admin/10 text-admin px-2 py-0.5 rounded-md font-black">{value as number}/10</span>
                                   </div>
                                   <Slider 
                                     disabled={readonly}
@@ -735,6 +818,31 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
 
           <TabsContent value="assignments" className="mt-4">
             <div className="space-y-6">
+              {/* For parents: top-level quick submit button */}
+              {isParent && sessionAssignments.length > 0 && (
+                <div className="flex items-center justify-between bg-gradient-to-r from-admin/5 to-admin/10 border border-admin/20 rounded-3xl p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-admin/10 flex items-center justify-center">
+                      <GraduationCap className="h-6 w-6 text-admin" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Nộp bài tập</p>
+                      <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Tải ảnh bài làm để gửi giáo viên chấm điểm</p>
+                    </div>
+                  </div>
+                  <Button
+                    className="h-12 rounded-2xl bg-admin hover:bg-admin/90 text-white font-black text-[11px] uppercase tracking-widest px-8 shadow-lg shadow-admin/20 transition-all active:scale-95"
+                    onClick={() => {
+                      setSubmittingAssgnId(sessionAssignments[sessionAssignments.length - 1]?.id);
+                      setIsUploadDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Đính kèm bài làm
+                  </Button>
+                </div>
+              )}
+
               {sessionAssignments.length > 0 ? [...sessionAssignments].reverse().map((assgn) => {
                 const lesson = lessons.find(l => l.id === assgn.lessonId);
                 return (
@@ -777,82 +885,125 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
                       </CardHeader>
                       <CardContent className="p-0">
                         <div className="divide-y divide-muted/50">
-                          {filteredAssignments.find(fa => fa.id === assgn.id)?.submissions?.length ? (
-                            filteredAssignments.find(fa => fa.id === assgn.id)?.submissions.map((sub) => (
-                              <div key={sub.id} className="p-4 hover:bg-muted/5 transition-colors">
+                          {(() => {
+                            const currentAssgn = filteredAssignments.find(fa => fa.id === assgn.id);
+                            const submissions = currentAssgn?.submissions || [];
+                            
+                            // If parent and no submission found, create a placeholder for "Chưa nộp"
+                            if (isParent && submissions.length === 0) {
+                              return (
+                                <div className="p-5 hover:bg-muted/5 transition-colors bg-white">
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4">
+                                      <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border border-dashed border-slate-300">
+                                        <AlertCircle className="h-6 w-6" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-black text-slate-800 uppercase tracking-tight">Trạng thái bài làm</p>
+                                        <p className="text-[10px] text-rose-500 font-black uppercase tracking-tighter mt-0.5 animate-pulse">Chưa nộp bài tập này</p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-3">
+                                      <Button 
+                                        className="h-11 rounded-2xl bg-admin hover:bg-admin/90 text-white font-black text-[11px] uppercase tracking-widest px-8 shadow-lg shadow-admin/20 transition-all active:scale-95"
+                                        onClick={() => {
+                                          setSubmittingAssgnId(assgn.id);
+                                          setIsUploadDialogOpen(true);
+                                        }}
+                                      >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Đính kèm bài làm
+                                      </Button>
+                                      <Badge className="bg-rose-500 text-white text-[10px] border-none shadow-sm h-7 px-4 font-black uppercase tracking-tighter">
+                                        Chưa nộp
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (submissions.length === 0) {
+                              return <p className="text-xs text-muted-foreground italic text-center py-8">Chưa có học sinh nào nộp bài</p>;
+                            }
+
+                            return submissions.map((sub) => (
+                              <div key={sub.id} className="p-5 hover:bg-muted/5 transition-colors bg-white">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-admin/10 flex items-center justify-center text-xs font-bold text-admin border border-admin/20">
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-full bg-admin/10 flex items-center justify-center text-sm font-black text-admin border border-admin/20 shadow-sm">
                                       {sub.studentName.charAt(0)}
                                     </div>
                                     <div>
-                                      <p className="text-sm font-bold">{sub.studentName}</p>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        {sub.status === "graded" ? `Đã nộp: ${sub.submittedAt}` : sub.status === "submitted" ? `Chờ chấm - Nộp lúc: ${sub.submittedAt}` : "Chưa nộp"}
+                                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{sub.studentName}</p>
+                                      <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
+                                        {sub.status === "graded" ? `Nộp lúc: ${sub.submittedAt}` : sub.status === "submitted" ? `Chờ chấm - Nộp lúc: ${sub.submittedAt}` : "Chưa nộp"}
                                       </p>
                                     </div>
                                   </div>
                                   
-                                  <div className="flex flex-wrap items-center gap-3">
-                                    {/* Cột File bài làm - New */}
+                                  <div className="flex flex-wrap items-center gap-4">
                                     {(sub.status === "submitted" || sub.status === "graded") && (sub as any).imageUrls?.[0] && (
                                       <Button 
                                         variant="outline" 
                                         size="sm" 
-                                        className="h-8 gap-2 border-admin/30 text-admin hover:bg-admin/5 px-2"
+                                        className="h-10 rounded-2xl gap-2 border-admin/30 text-admin hover:bg-admin/5 px-4 font-bold transition-all shadow-sm"
                                         onClick={() => setViewingImage((sub as any).imageUrls![0])}
                                       >
                                         <FileSearch className="h-4 w-4" />
-                                        <span className="text-[10px] font-bold">File bài làm</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">File bài làm</span>
                                       </Button>
                                     )}
 
                                     {!readonly ? (
-                                      <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-xl border border-muted-foreground/10">
+                                      <div className="flex items-center gap-3 bg-muted/20 p-2 rounded-2xl border border-muted-foreground/10">
                                         <div className="flex items-center gap-2">
-                                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Điểm</Label>
+                                          <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Điểm</Label>
                                           <Input 
                                             type="number" 
-                                            className="h-8 w-16 text-center text-xs font-bold border-muted-foreground/20 focus-visible:ring-admin" 
+                                            className="h-9 w-16 rounded-xl text-center text-xs font-black border-muted-foreground/20 focus-visible:ring-admin" 
                                             defaultValue={sub.score || 0}
                                           />
                                         </div>
-                                        <div className="flex items-center gap-2 flex-1 min-w-[150px]">
-                                          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nhận xét</Label>
+                                        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                                          <Label className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Nhận xét</Label>
                                           <Input 
-                                            className="h-8 text-xs border-muted-foreground/20 focus-visible:ring-admin" 
-                                            placeholder="Nhập nhận xét..."
+                                            className="h-9 rounded-xl text-xs font-medium border-muted-foreground/20 focus-visible:ring-admin italic" 
+                                            placeholder="Nhập nhận xét chi tiết..."
                                             defaultValue={sub.feedback || ""}
                                           />
                                         </div>
                                         <Button 
                                           size="sm" 
-                                          className="h-8 bg-admin text-[11px] font-bold shadow-none hover:bg-admin/90"
+                                          className="h-9 rounded-xl bg-admin text-[10px] font-black uppercase tracking-widest shadow-md shadow-admin/10 hover:bg-admin/90 px-6"
                                           onClick={() => toast.success(`Đã lưu điểm cho ${sub.studentName}`)}
                                         >
-                                          Lưu điểm
+                                          Lưu
                                         </Button>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-4 bg-muted/5 p-2 rounded-2xl border border-muted/10 pr-4">
                                         {sub.status === "graded" && (
-                                          <div className="text-right mr-2">
-                                            <p className="text-xs font-bold text-admin">{sub.score}/{assgn.totalPoints}đ</p>
-                                            <p className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">{sub.feedback}</p>
+                                          <div className="text-right border-r border-muted/20 pr-4">
+                                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-0.5">Kết quả</p>
+                                            <p className="text-lg font-black text-admin leading-none tracking-tighter">{sub.score}<span className="text-xs text-slate-400 ml-0.5">/{assgn.totalPoints}</span></p>
+                                            <p className="text-[9px] text-muted-foreground italic truncate max-w-[150px] mt-1 font-medium">“{sub.feedback}”</p>
                                           </div>
                                         )}
-                                        <Badge className={`${sub.status === "graded" ? "bg-status-success" : sub.status === "submitted" ? "bg-status-warning" : "bg-status-danger"} text-[10px] border-none shadow-sm h-6 px-3`}>
-                                          {sub.status === "graded" ? "Đã chấm" : sub.status === "submitted" ? "Chờ chấm" : "Chưa nộp"}
+                                        <Badge className={cn(
+                                          "text-[10px] border-none shadow-sm h-8 px-4 font-black uppercase tracking-tighter",
+                                          sub.status === "graded" ? "bg-emerald-500" : "bg-orange-500"
+                                        )}>
+                                          {sub.status === "graded" ? "Đã chấm" : "Chờ chấm"}
                                         </Badge>
                                       </div>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <p className="text-xs text-muted-foreground italic text-center py-8">Chưa có học sinh nào tham gia lớp này</p>
-                          )}
+                            ));
+                          })()}
                         </div>
                       </CardContent>
                     </Card>
@@ -975,27 +1126,73 @@ const ClassDetailView = ({ classId, readonly, rolePrefix }: Props) => {
         </Tabs>
       )}
 
-      {/* Image Preview Dialog */}
-      <Dialog open={!!viewingImage} onOpenChange={(open) => !open && setViewingImage(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-transparent border-none">
-          <div className="relative group">
-            <img 
-              src={viewingImage || ""} 
-              alt="Student Submission" 
-              className="w-full h-auto max-h-[85vh] object-contain rounded-lg shadow-2xl bg-white"
-            />
-            <div className="absolute top-4 right-4 flex gap-2">
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className="rounded-full h-8 w-8 p-0 bg-white/80 hover:bg-white text-black border-none shadow-md"
-                onClick={() => setViewingImage(null)}
-              >
-                ✕
-              </Button>
+      {/* Homework Submission Dialog */}
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-8 bg-admin text-white pb-12">
+            <DialogTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
+              <Plus className="h-6 w-6" /> Nộp bài tập
+            </DialogTitle>
+            <p className="text-white/70 text-xs font-bold uppercase tracking-widest mt-2">{assignmentList.find(a => a.id === submittingAssgnId)?.title}</p>
+          </DialogHeader>
+          
+          <div className="p-8 -mt-8 bg-white rounded-t-[2.5rem] space-y-6">
+            <div className="space-y-4">
+              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                <FileSearch className="h-3 w-3" /> Tệp đính kèm ({uploadImages.length})
+              </Label>
+              
+              <div className="grid grid-cols-3 gap-4">
+                {uploadImages.map((img, i) => (
+                  <div key={i} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 group">
+                    <img src={img} alt="upload" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setUploadImages(uploadImages.filter((_, idx) => idx !== i))}
+                      className="absolute top-1 right-1 bg-rose-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                
+                <button 
+                  onClick={handleMockUpload}
+                  className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-admin hover:text-admin hover:bg-admin/5 transition-all group"
+                >
+                  <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-admin/10">
+                    <Plus className="h-5 w-5" />
+                  </div>
+                  <span className="text-[9px] font-black uppercase">Tải ảnh lên</span>
+                </button>
+              </div>
             </div>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20">
-              Ảnh chụp bài làm của học sinh
+
+            <div className="space-y-3">
+              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                <MessageCircle className="h-3 w-3" /> Ghi chú cho giáo viên
+              </Label>
+              <Textarea 
+                className="rounded-2xl bg-slate-50 border-none min-h-[100px] text-sm focus-visible:ring-admin placeholder:text-slate-300 italic" 
+                placeholder="Nhập ghi chú gửi đến cô giáo (ví dụ: Bé làm bài trang 45-46 ạ)..."
+                value={uploadNotes}
+                onChange={(e) => setUploadNotes(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button 
+                variant="ghost" 
+                className="flex-1 h-14 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-400"
+                onClick={() => setIsUploadDialogOpen(false)}
+              >
+                Hủy bỏ
+              </Button>
+              <Button 
+                className="flex-[2] h-14 rounded-2xl bg-admin hover:bg-admin/90 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-admin/20 transition-all active:scale-95"
+                onClick={handleSubmitHomework}
+              >
+                Xác nhận nộp bài
+              </Button>
             </div>
           </div>
         </DialogContent>

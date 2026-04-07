@@ -4,6 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import LoginPage from "./pages/LoginPage";
+import LandingPage from "./pages/LandingPage";
+import PublicCommunityPage from "./pages/PublicCommunityPage";
+import PublicCoursesPage from "./pages/PublicCoursesPage";
+import PublicLibraryPage from "./pages/PublicLibraryPage";
+import PublicAboutPage from "./pages/PublicAboutPage";
+import PublicContactPage from "./pages/PublicContactPage";
 import AdminLayout from "./components/layouts/AdminLayout";
 import TeacherLayout from "./components/layouts/TeacherLayout";
 import ParentLayout from "./components/layouts/ParentLayout";
@@ -40,7 +46,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/community" element={<PublicCommunityPage />} />
+          <Route path="/courses" element={<PublicCoursesPage />} />
+          <Route path="/library" element={<PublicLibraryPage />} />
+          <Route path="/about" element={<PublicAboutPage />} />
+          <Route path="/contact" element={<PublicContactPage />} />
 
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/users" replace />} />

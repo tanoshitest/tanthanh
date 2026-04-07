@@ -126,7 +126,7 @@ const AdminLibrary = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Thư viện tài liệu</h1>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Quản lý tài liệu</h1>
           <p className="text-sm text-muted-foreground font-medium mt-1">Quản lý và chia sẻ học liệu toàn trung tâm</p>
         </div>
         

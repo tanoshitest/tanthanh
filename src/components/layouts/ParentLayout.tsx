@@ -68,7 +68,7 @@ const ParentLayout = () => {
           <header className="h-14 flex items-center justify-between border-b px-4 bg-card">
             <div className="flex items-center gap-2">
               <SidebarTrigger />
-              <span className="font-semibold text-sm hidden sm:block">Trung tâm Giáo dục ABC</span>
+              <span className="font-semibold text-sm hidden sm:block">Tanthanh Edu</span>
             </div>
             <div className="flex items-center gap-3">
               <Select value={selectedChildId} onValueChange={setSelectedChildId}>
