@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NZEDU — Hệ thống quản lý trung tâm ngoại ngữ</title>
+<style>
+  :root{
+    --brand:#1e66f5;
+    --brand-dark:#1651c4;
+    --brand-soft:#e8f0ff;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --line:#e5e7eb;
+    --bg:#f7f9fc;
+    --ok:#16a34a;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  a{color:var(--brand);text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  .view{display:none}
+  .view.active{display:block}
+  .container{max-width:1200px;margin:0 auto;padding:0 20px}
+  /* ===== PUBLIC HEADER ===== */
+  .pub-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .pub-header .inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;color:var(--brand)}
+  .logo .dot{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1e66f5,#22d3ee);display:inline-block}
+  nav.pub-nav a{margin:0 14px;color:var(--ink);font-weight:500}
+  nav.pub-nav a:hover{color:var(--brand)}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:14px;transition:.15s}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-outline{background:#fff;color:var(--brand);border-color:var(--brand)}
+  .btn-ghost{background:transparent;color:var(--ink)}
+  .btn-ghost:hover{background:#f1f5f9}
+
+  /* Login dropdown */
+  .login-wrap{position:relative}
+  .login-menu{position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.12);min-width:280px;padding:8px;display:none;z-index:100}
+  .login-menu.open{display:block}
+  .login-menu .hd{padding:10px 12px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .role-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer}
+  .role-item:hover{background:var(--brand-soft)}
+  .role-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}
+  .ri-admin{background:#8b5cf6}
+  .ri-hv{background:#0ea5e9}
+  .ri-gv{background:#16a34a}
+  .ri-hs{background:#f59e0b}
+  .role-item .t{font-weight:600}
+  .role-item .s{font-size:12px;color:var(--muted)}
+
+  /* HERO */
+  .hero{padding:72px 0;background:linear-gradient(180deg,#eaf2ff 0%,#f7f9fc 100%)}
+  .hero .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+  .hero h1{font-size:44px;line-height:1.15;margin:0 0 16px}
+  .hero h1 span{color:var(--brand)}
+  .hero p.lead{font-size:18px;color:var(--muted);margin:0 0 28px;line-height:1.6}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero-art{background:#fff;border-radius:20px;padding:24px;box-shadow:0 20px 50px rgba(30,102,245,.12);border:1px solid var(--line)}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+  .stat{background:var(--brand-soft);padding:16px;border-radius:12px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--brand)}
+  .stat span{font-size:12px;color:var(--muted)}
+
+  /* Sections */
+  section.pub{padding:64px 0}
+  .sec-title{text-align:center;margin-bottom:40px}
+  .sec-title h2{font-size:32px;margin:0 0 8px}
+  .sec-title p{color:var(--muted);margin:0}
+  .cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;transition:.2s}
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(15,23,42,.08)}
+  .card .ico{width:52px;height:52px;border-radius:12px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+  .card h3{margin:0 0 8px;font-size:18px}
+  .card p{color:var(--muted);margin:0;font-size:14px;line-height:1.6}
+  .card ul{padding-left:18px;color:var(--muted);font-size:14px;line-height:1.8;margin:8px 0 0}
+
+  /* Consult form */
+  .consult{background:linear-gradient(135deg,#1e66f5,#22d3ee);padding:60px 0;color:#fff;border-radius:20px;margin:40px auto}
+  .consult .inner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  .consult h2{font-size:30px;margin:0 0 8px}
+  .consult p{opacity:.9;margin:0 0 20px}
+  .form-card{background:#fff;color:var(--ink);padding:28px;border-radius:16px}
+  .form-card .row{margin-bottom:14px}
+  .form-card label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .form-card input,.form-card select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
+  .form-card input:focus,.form-card select:focus{outline:none;border-color:var(--brand)}
+
+  footer.pub-footer{background:#0f172a;color:#cbd5e1;padding:40px 0;text-align:center;font-size:14px;margin-top:60px}
+
+  /* ===== APP (DASHBOARD) ===== */
+  .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  .sidebar{background:#0f172a;color:#cbd5e1;padding:20px 14px}
+  .sidebar .logo-app{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:18px;padding:6px 10px 20px;border-bottom:1px solid #1e293b;margin-bottom:14px}
+  .sidebar .logo-app .dot{width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1e66f5,#22d3ee)}
+  .side-group{font-size:11px;text-transform:uppercase;color:#64748b;padding:12px 10px 6px;letter-spacing:.6px}
+  .side-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:#cbd5e1}
+  .side-item:hover{background:#1e293b;color:#fff}
+  .side-item.active{background:var(--brand);color:#fff}
+  .side-item .em{width:18px;text-align:center}
+
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{background:#fff;border-bottom:1px solid var(--line);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+  .topbar h1{font-size:18px;margin:0}
+  .topbar .right{display:flex;align-items:center;gap:16px}
+  .badge-role{background:var(--brand-soft);color:var(--brand);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+  .badge-role:hover{filter:brightness(.95)}
+  .role-switcher{position:relative;display:inline-block}
+  .role-dropdown{position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(15,23,42,.15);min-width:260px;padding:8px;display:none;z-index:100}
+  .role-dropdown.open{display:block}
+  .role-dropdown .hd{padding:8px 12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  .role-dropdown .role-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer}
+  .role-dropdown .role-item:hover{background:var(--brand-soft)}
+  .role-dropdown .role-item.current{background:#f1f5f9;cursor:default}
+  .role-dropdown .role-item.current:hover{background:#f1f5f9}
+  .role-dropdown .role-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e66f5,#22d3ee);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .content{padding:28px;flex:1;overflow:auto}
+
+  /* Widgets */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+  .kpi .lbl{color:var(--muted);font-size:13px}
+  .kpi .val{font-size:28px;font-weight:800;margin-top:6px}
+  .kpi .diff{font-size:12px;margin-top:4px}
+  .kpi .diff.up{color:var(--ok)}
+  .kpi .diff.down{color:var(--danger)}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px}
+  .panel h3{margin:0 0 16px;font-size:16px}
+  .panel .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .panel .head h3{margin:0}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:.3px}
+  tr:hover td{background:#fafbff}
+  .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .tag-ok{background:#dcfce7;color:#166534}
+  .tag-warn{background:#fef3c7;color:#92400e}
+  .tag-pend{background:#dbeafe;color:#1e40af}
+  .tag-danger{background:#fee2e2;color:#991b1b}
+  .tag-muted{background:#f1f5f9;color:#475569}
+
+  .two-col{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+  .list-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .list-item:last-child{border:0}
+  .li-dot{width:10px;height:10px;border-radius:50%;background:var(--brand);margin-top:6px;flex-shrink:0}
+  .li-dot.warn{background:var(--warn)}
+  .li-dot.ok{background:var(--ok)}
+  .li-dot.danger{background:var(--danger)}
+  .list-item .body{flex:1}
+  .list-item .body b{display:block;font-size:14px}
+  .list-item .body span{font-size:12px;color:var(--muted)}
+
+  /* Flow step visualization */
+  .flow-steps{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}
+  .flow-step{background:var(--brand-soft);color:var(--brand);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;position:relative}
+  .flow-step .n{background:var(--brand);color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-right:8px}
+
+  .bar-chart{display:flex;gap:10px;align-items:end;height:160px;padding:10px 0}
+  .bar-chart .bar{flex:1;background:linear-gradient(180deg,#1e66f5,#22d3ee);border-radius:6px 6px 0 0;position:relative;min-height:20px}
+  .bar-chart .bar span{position:absolute;top:-22px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+  .bar-chart .bar::after{content:attr(data-m);position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+
+  .btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .btn-sm:hover{background:#f1f5f9}
+  .btn-sm.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-sm.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+
+  .schedule{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .sch-day{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:10px;min-height:120px}
+  .sch-day b{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  .sch-event{background:var(--brand);color:#fff;padding:6px 8px;border-radius:6px;font-size:11px;margin-bottom:4px}
+  .sch-event.green{background:var(--ok)}
+  .sch-event.orange{background:var(--warn)}
+
+  .progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:6px}
+  .progress > span{display:block;height:100%;background:var(--brand)}
+
+  @media (max-width: 960px){
+    .hero .grid,.consult .inner,.two-col{grid-template-columns:1fr}
+    .cards-3{grid-template-columns:1fr}
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .app{grid-template-columns:1fr}
+    .sidebar{display:none}
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ============ VIEW: TRANG CHỦ CÔNG KHAI ============ -->
+<div id="view-home" class="view active">
+  <header class="pub-header">
+    <div class="container inner">
+      <div class="logo"><span class="dot"></span> NZEDU</div>
+      <nav class="pub-nav">
+        <a href="#">Trang chủ</a>
+        <a href="#courses">Khóa học</a>
+        <a href="#about">Giới thiệu</a>
+        <a href="#news">Tin tức</a>
+        <a href="#contact">Liên hệ</a>
+      </nav>
+      <div class="login-wrap">
+        <button class="btn btn-primary" onclick="toggleLogin(event)">Đăng nhập ▾</button>
+        <div id="loginMenu" class="login-menu">
+          <div class="hd">Chọn vai trò</div>
+          <div class="role-item" onclick="goApp('admin')">
+            <div class="role-icon ri-admin">⚙️</div>
+            <div><div class="t">Admin</div><div class="s">Quản lý cao nhất</div></div>
+          </div>
+          <div class="role-item" onclick="goApp('hv')">
+            <div class="role-icon ri-hv">📋</div>
+            <div><div class="t">Học vụ</div><div class="s">Vận hành hàng ngày</div></div>
+          </div>
+          <div class="role-item" onclick="goApp('gv')">
+            <div class="role-icon ri-gv">👨‍🏫</div>
+            <div><div class="t">Giáo viên</div><div class="s">Giảng dạy & chấm điểm</div></div>
+          </div>
+          <div class="role-item" onclick="goApp('hs')">
+            <div class="role-icon ri-hs">🎓</div>
+            <div><div class="t">Học sinh</div><div class="s">Theo dõi học tập</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container grid">
+      <div>
+        <h1>Học tiếng Anh cùng <span>NZEDU</span><br>Vững bước tương lai</h1>
+        <p class="lead">Trung tâm ngoại ngữ với 3 chương trình đào tạo: Thiếu nhi · Thiếu niên · IELTS. Đội ngũ giáo viên chuẩn Cambridge, lộ trình học rõ ràng, theo dõi tiến độ minh bạch.</p>
+        <div class="cta">
+          <button class="btn btn-primary">Đăng ký tư vấn miễn phí</button>
+          <button class="btn btn-outline">Xem khóa học</button>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div style="font-size:14px;color:var(--muted);margin-bottom:8px">Thành tích NZEDU</div>
+        <div style="font-size:20px;font-weight:700">Hơn 2,500 học viên tin tưởng</div>
+        <div class="stat-row">
+          <div class="stat"><b>2,500+</b><span>Học viên</span></div>
+          <div class="stat"><b>8</b><span>Năm kinh nghiệm</span></div>
+          <div class="stat"><b>95%</b><span>Đậu chứng chỉ</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pub" id="courses">
+    <div class="container">
+      <div class="sec-title"><h2>Chương trình đào tạo</h2><p>Ba lộ trình học được thiết kế chuẩn Cambridge</p></div>
+      <div class="cards-3">
+        <div class="card">
+          <div class="ico">🧒</div>
+          <h3>Thiếu nhi (6–10 tuổi)</h3>
+          <p>Học tiếng Anh qua trò chơi, bài hát, hoạt động tương tác. Xây nền tảng nghe nói tự nhiên.</p>
+          <ul><li>Starters · Movers · Flyers</li><li>48–60 buổi mỗi khóa</li><li>Lớp tối đa 12 HV</li></ul>
+        </div>
+        <div class="card">
+          <div class="ico">🧑</div>
+          <h3>Thiếu niên (11–15 tuổi)</h3>
+          <p>Phát triển kỹ năng giao tiếp, ngữ pháp vững vàng, chuẩn bị cho kỳ thi KET, PET.</p>
+          <ul><li>KET · PET · FCE</li><li>60 buổi mỗi khóa</li><li>Thi thử định kỳ</li></ul>
+        </div>
+        <div class="card">
+          <div class="ico">🎯</div>
+          <h3>IELTS</h3>
+          <p>Lộ trình từ 4.0 đến 7.5+ với giáo viên chuyên luyện thi, tài liệu cập nhật mới nhất.</p>
+          <ul><li>Foundation → Advanced</li><li>4 kỹ năng Cambridge</li><li>Cam kết đầu ra</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pub" id="about" style="background:#fff">
+    <div class="container">
+      <div class="sec-title"><h2>Vì sao chọn NZEDU?</h2><p>Những điểm làm nên khác biệt</p></div>
+      <div class="cards-3">
+        <div class="card"><div class="ico">🏆</div><h3>Chuẩn Cambridge</h3><p>Giáo trình và bài thi theo chuẩn quốc tế, chứng chỉ được công nhận toàn cầu.</p></div>
+        <div class="card"><div class="ico">👩‍🏫</div><h3>Giáo viên chất lượng</h3><p>Đội ngũ có bằng TESOL/CELTA, kinh nghiệm giảng dạy lâu năm.</p></div>
+        <div class="card"><div class="ico">📊</div><h3>Theo dõi minh bạch</h3><p>Phụ huynh dễ dàng xem điểm, lịch học, tiến độ của con mọi lúc.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container">
+    <div class="consult">
+      <div class="inner" style="padding:0 40px">
+        <div>
+          <h2>Đăng ký tư vấn miễn phí</h2>
+          <p>Để lại thông tin, đội ngũ Học vụ NZEDU sẽ liên hệ trong 24h.</p>
+          <p style="font-size:14px;opacity:.85">📞 Hotline: 0909 123 456 · 📧 info@nzedu.vn</p>
+        </div>
+        <div class="form-card">
+          <div class="row"><label>Họ và tên</label><input placeholder="Nguyễn Văn A"></div>
+          <div class="row"><label>Số điện thoại</label><input placeholder="09xxxxxxxx"></div>
+          <div class="row"><label>Email</label><input placeholder="email@example.com"></div>
+          <div class="row"><label>Chương trình quan tâm</label>
+            <select><option>Thiếu nhi</option><option>Thiếu niên</option><option>IELTS</option></select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="alert('Cảm ơn bạn! Học vụ sẽ liên hệ trong 24h. (demo)')">Gửi đăng ký</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pub-footer">
+    <div class="container">
+      <div class="logo" style="justify-content:center"><span class="dot"></span> NZEDU</div>
+      <p>© 2026 NZEDU — Hệ thống quản lý trung tâm ngoại ngữ · Thực hiện bởi Tanoshi Vietnam</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ VIEW: ADMIN DASHBOARD ============ -->
+<div id="view-admin" class="view">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo-app"><span class="dot"></span> NZEDU</div>
+      <div class="side-group">Tổng quan</div>
+      <div class="side-item active" onclick="setAdmin('overview',this)"><span class="em">📊</span> Dashboard</div>
+      <div class="side-item" onclick="setAdmin('accounts',this)"><span class="em">👥</span> Quản lý tài khoản</div>
+      <div class="side-group">Tài chính</div>
+      <div class="side-item" onclick="setAdmin('finance',this)"><span class="em">💰</span> Duyệt thu phí</div>
+      <div class="side-item" onclick="setAdmin('revenue',this)"><span class="em">📈</span> Báo cáo doanh thu</div>
+      <div class="side-group">Học vụ</div>
+      <div class="side-item" onclick="setAdmin('courses',this)"><span class="em">📚</span> Thiết lập khóa học</div>
+      <div class="side-item" onclick="setAdmin('web',this)"><span class="em">🌐</span> Nội dung website</div>
+      <div class="side-group"></div>
+      <div class="side-item" onclick="logout()"><span class="em">↩️</span> Về trang chủ</div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <h1 id="admin-title">Dashboard tổng quan</h1>
+        <div class="right">
+          <div class="role-switcher">
+            <button class="badge-role" onclick="toggleRoleMenu(event,'rs-admin')">ADMIN ▾</button>
+            <div id="rs-admin" class="role-dropdown"></div>
+          </div>
+          <div class="avatar">R</div><button class="btn-sm" onclick="logout()">↩ Đăng xuất</button>
+        </div>
+      </div>
+      <div class="content" id="admin-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: HỌC VỤ DASHBOARD ============ -->
+<div id="view-hv" class="view">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo-app"><span class="dot"></span> NZEDU</div>
+      <div class="side-group">Học viên</div>
+      <div class="side-item active" onclick="setHv('overview',this)"><span class="em">📊</span> Dashboard</div>
+      <div class="side-item" onclick="setHv('leads',this)"><span class="em">📞</span> Khách đăng ký tư vấn</div>
+      <div class="side-item" onclick="setHv('students',this)"><span class="em">🎓</span> Hồ sơ học viên</div>
+      <div class="side-item" onclick="setHv('care',this)"><span class="em">📝</span> Nhật ký chăm sóc</div>
+      <div class="side-group">Lớp học</div>
+      <div class="side-item" onclick="setHv('classes',this)"><span class="em">🏫</span> Xếp lớp & phân công</div>
+      <div class="side-item" onclick="setHv('attend',this)"><span class="em">✅</span> Điểm danh</div>
+      <div class="side-group">Tài chính</div>
+      <div class="side-item" onclick="setHv('fees',this)"><span class="em">💳</span> Thu phí & gói buổi</div>
+      <div class="side-group"></div>
+      <div class="side-item" onclick="logout()"><span class="em">↩️</span> Về trang chủ</div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <h1 id="hv-title">Dashboard Học vụ</h1>
+        <div class="right">
+          <div class="role-switcher">
+            <button class="badge-role" style="background:#e0f2fe;color:#0369a1" onclick="toggleRoleMenu(event,'rs-hv')">HỌC VỤ ▾</button>
+            <div id="rs-hv" class="role-dropdown"></div>
+          </div>
+          <div class="avatar" style="background:linear-gradient(135deg,#0ea5e9,#0284c7)">H</div><button class="btn-sm" onclick="logout()">↩ Đăng xuất</button>
+        </div>
+      </div>
+      <div class="content" id="hv-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: GIÁO VIÊN DASHBOARD ============ -->
+<div id="view-gv" class="view">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo-app"><span class="dot"></span> NZEDU</div>
+      <div class="side-group">Giảng dạy</div>
+      <div class="side-item active" onclick="setGv('overview',this)"><span class="em">📊</span> Dashboard</div>
+      <div class="side-item" onclick="setGv('schedule',this)"><span class="em">📅</span> Lịch dạy của tôi</div>
+      <div class="side-item" onclick="setGv('content',this)"><span class="em">📖</span> Nội dung giảng dạy</div>
+      <div class="side-item" onclick="setGv('grades',this)"><span class="em">✏️</span> Chấm bài & nhập điểm</div>
+      <div class="side-item" onclick="setGv('homeroom',this)"><span class="em">👥</span> Lớp chủ nhiệm</div>
+      <div class="side-group"></div>
+      <div class="side-item" onclick="logout()"><span class="em">↩️</span> Về trang chủ</div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <h1 id="gv-title">Dashboard Giáo viên</h1>
+        <div class="right">
+          <div class="role-switcher">
+            <button class="badge-role" style="background:#dcfce7;color:#166534" onclick="toggleRoleMenu(event,'rs-gv')">GIÁO VIÊN ▾</button>
+            <div id="rs-gv" class="role-dropdown"></div>
+          </div>
+          <div class="avatar" style="background:linear-gradient(135deg,#16a34a,#15803d)">T</div><button class="btn-sm" onclick="logout()">↩ Đăng xuất</button>
+        </div>
+      </div>
+      <div class="content" id="gv-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: HỌC SINH DASHBOARD ============ -->
+<div id="view-hs" class="view">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo-app"><span class="dot"></span> NZEDU</div>
+      <div class="side-group">Học tập</div>
+      <div class="side-item active" onclick="setHs('overview',this)"><span class="em">📊</span> Trang của tôi</div>
+      <div class="side-item" onclick="setHs('profile',this)"><span class="em">👤</span> Thông tin cá nhân</div>
+      <div class="side-item" onclick="setHs('results',this)"><span class="em">📝</span> Kết quả học tập</div>
+      <div class="side-item" onclick="setHs('exam',this)"><span class="em">📄</span> Thi online</div>
+      <div class="side-item" onclick="setHs('attend',this)"><span class="em">📅</span> Lịch sử điểm danh</div>
+      <div class="side-group"></div>
+      <div class="side-item" onclick="logout()"><span class="em">↩️</span> Về trang chủ</div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <h1 id="hs-title">Trang học sinh</h1>
+        <div class="right">
+          <div class="role-switcher">
+            <button class="badge-role" style="background:#fef3c7;color:#92400e" onclick="toggleRoleMenu(event,'rs-hs')">HỌC SINH ▾</button>
+            <div id="rs-hs" class="role-dropdown"></div>
+          </div>
+          <div class="avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">M</div><button class="btn-sm" onclick="logout()">↩ Đăng xuất</button>
+        </div>
+      </div>
+      <div class="content" id="hs-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== NAVIGATION ========== */
+function toggleLogin(e){
+  e.stopPropagation();
+  document.getElementById('loginMenu').classList.toggle('open');
+}
+document.addEventListener('click',()=>{document.getElementById('loginMenu').classList.remove('open')});
+
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goApp(role){
+  if(role==='admin'){show('view-admin');setAdmin('overview');}
+  if(role==='hv'){show('view-hv');setHv('overview');}
+  if(role==='gv'){show('view-gv');setGv('overview');}
+  if(role==='hs'){show('view-hs');setHs('overview');}
+}
+function logout(){show('view-home');}
+
+/* ===== ROLE SWITCHER ===== */
+const ROLES = [
+  {key:'admin', name:'Admin',     desc:'Quản lý cao nhất',    icon:'⚙️', cls:'ri-admin'},
+  {key:'hv',    name:'Học vụ',    desc:'Vận hành hàng ngày',  icon:'📋', cls:'ri-hv'},
+  {key:'gv',    name:'Giáo viên', desc:'Giảng dạy & chấm điểm',icon:'👨‍🏫',cls:'ri-gv'},
+  {key:'hs',    name:'Học sinh',  desc:'Theo dõi học tập',    icon:'🎓', cls:'ri-hs'},
+];
+function buildRoleMenu(id, currentKey){
+  const el = document.getElementById(id);
+  el.innerHTML = '<div class="hd">Chuyển vai trò</div>' + ROLES.map(r=>`
+    <div class="role-item ${r.key===currentKey?'current':''}" ${r.key===currentKey?'':`onclick="switchRole('${r.key}')"`}>
+      <div class="role-icon ${r.cls}">${r.icon}</div>
+      <div><div class="t">${r.name} ${r.key===currentKey?'<span style="color:var(--ok);font-size:11px">● hiện tại</span>':''}</div><div class="s">${r.desc}</div></div>
+    </div>`).join('');
+}
+function toggleRoleMenu(e,id){
+  e.stopPropagation();
+  const cur = id.replace('rs-','');
+  buildRoleMenu(id,cur);
+  document.querySelectorAll('.role-dropdown').forEach(d=>{if(d.id!==id)d.classList.remove('open')});
+  document.getElementById(id).classList.toggle('open');
+}
+function switchRole(role){
+  document.querySelectorAll('.role-dropdown').forEach(d=>d.classList.remove('open'));
+  goApp(role);
+}
+document.addEventListener('click',()=>{document.querySelectorAll('.role-dropdown').forEach(d=>d.classList.remove('open'))});
+
+function activate(el){
+  if(!el)return;
+  el.parentNode.querySelectorAll('.side-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ========== ADMIN VIEWS ========== */
+const adminViews = {
+  overview: {title:'Dashboard tổng quan', html:`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Tổng học viên</div><div class="val">2,547</div><div class="diff up">▲ 12% vs tháng trước</div></div>
+      <div class="kpi"><div class="lbl">Lớp đang mở</div><div class="val">68</div><div class="diff up">▲ 4 lớp mới</div></div>
+      <div class="kpi"><div class="lbl">Doanh thu tháng</div><div class="val">1.2 tỷ</div><div class="diff up">▲ 18%</div></div>
+      <div class="kpi"><div class="lbl">Tỉ lệ chuyển đổi</div><div class="val">42%</div><div class="diff down">▼ 3%</div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="head"><h3>Doanh thu 6 tháng gần đây</h3><button class="btn-sm">Xuất Excel</button></div>
+        <div class="bar-chart">
+          <div class="bar" data-m="T11" style="height:55%"><span>680tr</span></div>
+          <div class="bar" data-m="T12" style="height:70%"><span>820tr</span></div>
+          <div class="bar" data-m="T1" style="height:60%"><span>740tr</span></div>
+          <div class="bar" data-m="T2" style="height:78%"><span>920tr</span></div>
+          <div class="bar" data-m="T3" style="height:88%"><span>1.05T</span></div>
+          <div class="bar" data-m="T4" style="height:100%"><span>1.2T</span></div>
+        </div>
+        <div style="height:28px"></div>
+      </div>
+      <div class="panel">
+        <h3>⚠️ Chờ Admin duyệt</h3>
+        <div class="list-item"><div class="li-dot warn"></div><div class="body"><b>Phiếu thu #2301 — 12,000,000đ</b><span>Học vụ Lan đề xuất · 10 phút trước</span></div><button class="btn-sm ok">Duyệt</button></div>
+        <div class="list-item"><div class="li-dot warn"></div><div class="body"><b>Phiếu thu #2302 — 8,500,000đ</b><span>Học vụ Hương đề xuất · 30 phút trước</span></div><button class="btn-sm ok">Duyệt</button></div>
+        <div class="list-item"><div class="li-dot"></div><div class="body"><b>Yêu cầu tăng lương GV Trang</b><span>1 giờ trước</span></div><button class="btn-sm">Xem</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Phân bố học viên theo chương trình</h3>
+      <table><thead><tr><th>Chương trình</th><th>Số lớp</th><th>Học viên</th><th>Doanh thu tháng</th><th>Tình trạng</th></tr></thead><tbody>
+        <tr><td>Thiếu nhi (Starters/Movers/Flyers)</td><td>28</td><td>1,120</td><td>520,000,000đ</td><td><span class="tag tag-ok">Tốt</span></td></tr>
+        <tr><td>Thiếu niên (KET/PET/FCE)</td><td>22</td><td>880</td><td>410,000,000đ</td><td><span class="tag tag-ok">Tốt</span></td></tr>
+        <tr><td>IELTS (Foundation → Advanced)</td><td>18</td><td>547</td><td>270,000,000đ</td><td><span class="tag tag-warn">Cần tuyển thêm GV</span></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  accounts: {title:'Quản lý tài khoản', html:`
+    <div class="panel">
+      <div class="head"><h3>Danh sách tài khoản hệ thống</h3><button class="btn btn-primary">+ Tạo tài khoản</button></div>
+      <table><thead><tr><th>Tên</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+        <tr><td>Ryan Nguyễn</td><td>ryan@nzedu.vn</td><td><span class="tag tag-pend">Admin</span></td><td><span class="tag tag-ok">Hoạt động</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Lê Thị Lan</td><td>lan.le@nzedu.vn</td><td><span class="tag tag-pend">Học vụ</span></td><td><span class="tag tag-ok">Hoạt động</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Trần Thu Hương</td><td>huong.tran@nzedu.vn</td><td><span class="tag tag-pend">Học vụ</span></td><td><span class="tag tag-ok">Hoạt động</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Phạm Minh Trang</td><td>trang.pham@nzedu.vn</td><td><span class="tag tag-ok">Giáo viên</span></td><td><span class="tag tag-ok">Hoạt động</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Nguyễn Hoàng An</td><td>an.nguyen@nzedu.vn</td><td><span class="tag tag-ok">Giáo viên</span></td><td><span class="tag tag-muted">Khóa</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Đỗ Mai Linh</td><td>PH_linh@nzedu.vn</td><td><span class="tag tag-warn">Học sinh</span></td><td><span class="tag tag-ok">Hoạt động</span></td><td><button class="btn-sm">Sửa</button></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  finance: {title:'Duyệt thu phí', html:`
+    <div class="panel">
+      <h3>Phiếu thu chờ duyệt (3)</h3>
+      <table><thead><tr><th>Mã</th><th>Học viên</th><th>Gói</th><th>Số tiền</th><th>Học vụ</th><th>Thao tác</th></tr></thead><tbody>
+        <tr><td>#2301</td><td>Nguyễn Bảo An (TN-Flyers-03)</td><td>Gói 40 buổi</td><td>12,000,000đ</td><td>Lan</td><td><button class="btn-sm ok">Duyệt</button> <button class="btn-sm">Từ chối</button></td></tr>
+        <tr><td>#2302</td><td>Trần Khánh Vy (IELTS-5.5-02)</td><td>Gói 20 buổi</td><td>8,500,000đ</td><td>Hương</td><td><button class="btn-sm ok">Duyệt</button> <button class="btn-sm">Từ chối</button></td></tr>
+        <tr><td>#2303</td><td>Lê Gia Bảo (TN-Movers-01)</td><td>Gia hạn 24 buổi</td><td>6,800,000đ</td><td>Lan</td><td><button class="btn-sm ok">Duyệt</button> <button class="btn-sm">Từ chối</button></td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel">
+      <h3>Phiếu đã duyệt gần đây</h3>
+      <table><thead><tr><th>Mã</th><th>Học viên</th><th>Số tiền</th><th>Ngày</th><th>Hóa đơn</th></tr></thead><tbody>
+        <tr><td>#2300</td><td>Phạm Nhật Minh</td><td>12,000,000đ</td><td>11/04/2026</td><td><span class="tag tag-ok">Đã xuất</span></td></tr>
+        <tr><td>#2299</td><td>Hoàng Thảo My</td><td>8,500,000đ</td><td>11/04/2026</td><td><span class="tag tag-ok">Đã xuất</span></td></tr>
+        <tr><td>#2298</td><td>Đinh Quốc Khánh</td><td>6,800,000đ</td><td>10/04/2026</td><td><span class="tag tag-ok">Đã xuất</span></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  revenue:{title:'Báo cáo doanh thu', html:`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Doanh thu tháng 4</div><div class="val">1.2 tỷ</div><div class="diff up">▲ 18%</div></div>
+      <div class="kpi"><div class="lbl">Doanh thu tuần này</div><div class="val">280 tr</div><div class="diff up">▲ 6%</div></div>
+      <div class="kpi"><div class="lbl">Chưa thu (nợ)</div><div class="val">124 tr</div><div class="diff down">▼ 12%</div></div>
+      <div class="kpi"><div class="lbl">Số phiếu tháng</div><div class="val">287</div><div class="diff up">▲ 24</div></div>
+    </div>
+    <div class="panel"><h3>Doanh thu theo tháng</h3>
+      <div class="bar-chart">
+        <div class="bar" data-m="T11" style="height:55%"></div>
+        <div class="bar" data-m="T12" style="height:70%"></div>
+        <div class="bar" data-m="T1" style="height:60%"></div>
+        <div class="bar" data-m="T2" style="height:78%"></div>
+        <div class="bar" data-m="T3" style="height:88%"></div>
+        <div class="bar" data-m="T4" style="height:100%"></div>
+      </div><div style="height:28px"></div>
+    </div>
+  `},
+  courses:{title:'Thiết lập khóa học', html:`
+    <div class="panel">
+      <div class="head"><h3>Các chương trình đào tạo</h3><button class="btn btn-primary">+ Thêm chương trình</button></div>
+      <div class="cards-3">
+        <div class="card"><div class="ico">🧒</div><h3>Thiếu nhi</h3><p>Starters · Movers · Flyers</p><ul><li>48–60 buổi/khóa</li><li>3 cấp độ · 28 lớp đang mở</li></ul><button class="btn-sm primary" style="margin-top:10px">Chỉnh sửa giáo trình</button></div>
+        <div class="card"><div class="ico">🧑</div><h3>Thiếu niên</h3><p>KET · PET · FCE</p><ul><li>60 buổi/khóa</li><li>3 cấp độ · 22 lớp đang mở</li></ul><button class="btn-sm primary" style="margin-top:10px">Chỉnh sửa giáo trình</button></div>
+        <div class="card"><div class="ico">🎯</div><h3>IELTS</h3><p>Foundation → Advanced</p><ul><li>40–60 buổi/khóa</li><li>4 cấp độ · 18 lớp đang mở</li></ul><button class="btn-sm primary" style="margin-top:10px">Chỉnh sửa giáo trình</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Cấu hình cảnh báo & thi</h3>
+      <table><tbody>
+        <tr><td>Ngưỡng cảnh báo sắp hết buổi</td><td><b>3 buổi</b></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Số học viên tối đa/lớp</td><td><b>12</b></td><td><button class="btn-sm">Sửa</button></td></tr>
+        <tr><td>Đề thi Cambridge đang dùng</td><td><b>Bộ 2025 v2</b></td><td><button class="btn-sm">Sửa</button></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  web:{title:'Quản lý nội dung website', html:`
+    <div class="panel"><h3>Nội dung trang chủ</h3>
+    <table><tbody>
+      <tr><td>Banner chính</td><td>hero_2026.jpg</td><td><button class="btn-sm">Thay ảnh</button></td></tr>
+      <tr><td>Slogan</td><td>Học tiếng Anh cùng NZEDU — Vững bước tương lai</td><td><button class="btn-sm">Sửa</button></td></tr>
+      <tr><td>Số liệu nổi bật</td><td>2,500+ HV · 8 năm · 95% đậu</td><td><button class="btn-sm">Sửa</button></td></tr>
+    </tbody></table></div>
+    <div class="panel"><h3>Bài viết & tin tức (4)</h3>
+    <table><thead><tr><th>Tiêu đề</th><th>Danh mục</th><th>Ngày đăng</th><th>Trạng thái</th></tr></thead><tbody>
+      <tr><td>5 mẹo luyện Speaking IELTS nhanh tiến bộ</td><td>Kiến thức</td><td>09/04/2026</td><td><span class="tag tag-ok">Đã đăng</span></td></tr>
+      <tr><td>Workshop Phonics cho phụ huynh</td><td>Sự kiện</td><td>05/04/2026</td><td><span class="tag tag-ok">Đã đăng</span></td></tr>
+      <tr><td>NZEDU có 12 HV đạt 8.0+ IELTS</td><td>Thành tích</td><td>02/04/2026</td><td><span class="tag tag-ok">Đã đăng</span></td></tr>
+      <tr><td>Dã ngoại lớp Starters tháng 4</td><td>Ngoại khóa</td><td>—</td><td><span class="tag tag-warn">Nháp</span></td></tr>
+    </tbody></table></div>
+  `}
+};
+function setAdmin(k,el){activate(el);document.getElementById('admin-title').textContent=adminViews[k].title;document.getElementById('admin-content').innerHTML=adminViews[k].html}
+
+/* ========== HỌC VỤ VIEWS ========== */
+const hvViews = {
+  overview:{title:'Dashboard Học vụ', html:`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Khách tư vấn mới</div><div class="val">12</div><div class="diff up">▲ 4 hôm nay</div></div>
+      <div class="kpi"><div class="lbl">HV sắp hết buổi</div><div class="val">23</div><div class="diff down">Cần gia hạn</div></div>
+      <div class="kpi"><div class="lbl">Buổi học hôm nay</div><div class="val">18</div><div class="diff up">Đang diễn ra</div></div>
+      <div class="kpi"><div class="lbl">Phiếu thu chờ duyệt</div><div class="val">3</div><div class="diff">Đã gửi Admin</div></div>
+    </div>
+    <div class="panel"><h3>🔔 Việc cần làm hôm nay</h3>
+      <div class="list-item"><div class="li-dot danger"></div><div class="body"><b>HV Bảo An còn 2 buổi</b><span>Cần liên hệ PH để gia hạn gói</span></div><button class="btn-sm primary">Gọi ngay</button></div>
+      <div class="list-item"><div class="li-dot warn"></div><div class="body"><b>Điểm danh lớp TN-Flyers-03 — 18:00</b><span>Phòng 201 · GV Trang</span></div><button class="btn-sm">Vào điểm danh</button></div>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>Gọi lại chị Hoa (HV Gia Bảo)</b><span>Lịch nhắc từ 3 ngày trước</span></div><button class="btn-sm">Ghi nhật ký</button></div>
+      <div class="list-item"><div class="li-dot ok"></div><div class="body"><b>5 khách mới từ website</b><span>Đăng ký tư vấn trong 24h qua</span></div><button class="btn-sm">Xem danh sách</button></div>
+    </div>
+  `},
+  leads:{title:'Khách đăng ký tư vấn', html:`
+    <div class="panel">
+      <div class="head"><h3>Khách mới từ website (tự động cập nhật)</h3><button class="btn btn-primary">+ Thêm thủ công</button></div>
+      <table><thead><tr><th>Họ tên</th><th>SĐT</th><th>Chương trình</th><th>Nguồn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+        <tr><td>Chị Hoa (PH Gia Bảo)</td><td>0912 xxx 456</td><td>Thiếu nhi</td><td>Website</td><td><span class="tag tag-warn">Mới</span></td><td><button class="btn-sm primary">Gọi tư vấn</button></td></tr>
+        <tr><td>Anh Tuấn</td><td>0988 xxx 123</td><td>IELTS</td><td>Website</td><td><span class="tag tag-warn">Mới</span></td><td><button class="btn-sm primary">Gọi tư vấn</button></td></tr>
+        <tr><td>Chị Linh (PH Mai Anh)</td><td>0909 xxx 789</td><td>Thiếu niên</td><td>Website</td><td><span class="tag tag-pend">Đang tư vấn</span></td><td><button class="btn-sm">Ghi chú</button></td></tr>
+        <tr><td>Anh Hùng</td><td>0966 xxx 334</td><td>IELTS</td><td>Facebook</td><td><span class="tag tag-pend">Đang tư vấn</span></td><td><button class="btn-sm">Ghi chú</button></td></tr>
+        <tr><td>Chị Mai (PH Khánh Vy)</td><td>0933 xxx 812</td><td>Thiếu nhi</td><td>Website</td><td><span class="tag tag-ok">Đã đăng ký học</span></td><td><button class="btn-sm">Xem HS</button></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  students:{title:'Hồ sơ học viên', html:`
+    <div class="panel">
+      <div class="head"><h3>Danh sách học viên (2,547)</h3><div>
+        <input placeholder="Tìm theo tên / SĐT / lớp..." style="padding:9px 12px;border:1px solid var(--line);border-radius:8px;width:260px">
+        <button class="btn btn-primary">+ Tạo hồ sơ</button>
+      </div></div>
+      <table><thead><tr><th>Họ tên</th><th>PH</th><th>Lớp</th><th>Buổi còn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+        <tr><td>Nguyễn Bảo An</td><td>Chị Hoa · 0912xxx456</td><td>TN-Flyers-03</td><td><b style="color:var(--danger)">2</b></td><td><span class="tag tag-ok">Đang học</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+        <tr><td>Trần Khánh Vy</td><td>Chị Mai · 0933xxx812</td><td>IELTS-5.5-02</td><td>15</td><td><span class="tag tag-ok">Đang học</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+        <tr><td>Lê Gia Bảo</td><td>Anh Tuấn · 0988xxx121</td><td>TN-Movers-01</td><td>24</td><td><span class="tag tag-ok">Đang học</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+        <tr><td>Phạm Nhật Minh</td><td>Chị Thủy · 0944xxx567</td><td>IELTS-6.5-01</td><td>38</td><td><span class="tag tag-ok">Đang học</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+        <tr><td>Hoàng Thảo My</td><td>Chị Nhung · 0977xxx098</td><td>TN-Starters-05</td><td>0</td><td><span class="tag tag-muted">Nghỉ</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+        <tr><td>Đinh Quốc Khánh</td><td>Anh Bình · 0909xxx334</td><td>TN-Flyers-02</td><td>30</td><td><span class="tag tag-ok">Đang học</span></td><td><button class="btn-sm">Chi tiết</button></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  care:{title:'Nhật ký chăm sóc', html:`
+    <div class="panel"><h3>Lịch sử chăm sóc — HV Nguyễn Bảo An</h3>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>11/04/2026 · Lan — Gọi điện PH</b><span>PH đồng ý gia hạn gói 24 buổi. Hẹn thứ 2 đến đóng tiền.</span></div></div>
+      <div class="list-item"><div class="li-dot warn"></div><div class="body"><b>08/04/2026 · Lan — Nhắc gia hạn</b><span>Còn 3 buổi. PH bảo sẽ trao đổi với chồng.</span></div></div>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>02/04/2026 · Hương — Gặp mặt ở trung tâm</b><span>PH hài lòng về tiến bộ của con, muốn đổi sang giờ tối.</span></div></div>
+      <div class="list-item"><div class="li-dot ok"></div><div class="body"><b>20/03/2026 · Lan — Xếp lớp mới</b><span>Chuyển từ Movers-05 sang Flyers-03 theo kết quả kiểm tra.</span></div></div>
+    </div>
+    <div class="panel"><h3>Lịch nhắc sắp tới</h3>
+    <table><tbody>
+      <tr><td>15/04/2026</td><td>Gọi lại chị Hoa — xác nhận đóng tiền gia hạn</td><td>HV: Bảo An</td></tr>
+      <tr><td>16/04/2026</td><td>Gọi PH Khánh Vy — báo kết quả thi thử</td><td>HV: Khánh Vy</td></tr>
+      <tr><td>18/04/2026</td><td>Mời PH họp cuối khóa</td><td>Lớp TN-Flyers-03</td></tr>
+    </tbody></table></div>
+  `},
+  classes:{title:'Xếp lớp & phân công GV', html:`
+    <div class="panel">
+      <div class="head"><h3>Các lớp đang mở (68)</h3><button class="btn btn-primary">+ Tạo lớp mới</button></div>
+      <table><thead><tr><th>Mã lớp</th><th>Chương trình</th><th>Sĩ số</th><th>GV chủ nhiệm</th><th>Phòng · Lịch</th><th>Thao tác</th></tr></thead><tbody>
+        <tr><td>TN-Flyers-03</td><td>Thiếu nhi</td><td>10/12</td><td>Phạm Trang</td><td>P.201 · T2-4-6, 18:00</td><td><button class="btn-sm">Phân công</button></td></tr>
+        <tr><td>TN-Movers-01</td><td>Thiếu nhi</td><td>12/12</td><td>Lê Huyền</td><td>P.102 · T3-5-7, 17:30</td><td><button class="btn-sm">Phân công</button></td></tr>
+        <tr><td>IELTS-5.5-02</td><td>IELTS</td><td>8/12</td><td>Nguyễn An</td><td>P.305 · T2-4-6, 19:30</td><td><button class="btn-sm">Phân công</button></td></tr>
+        <tr><td>IELTS-6.5-01</td><td>IELTS</td><td>10/12</td><td>Trương Mai</td><td>P.306 · T3-5-7, 19:30</td><td><button class="btn-sm">Phân công</button></td></tr>
+        <tr><td>TN-Starters-05</td><td>Thiếu nhi</td><td>11/12</td><td>Vũ Hương</td><td>P.105 · T2-4-6, 17:30</td><td><button class="btn-sm">Phân công</button></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  attend:{title:'Điểm danh', html:`
+    <div class="panel"><div class="head"><h3>Điểm danh — TN-Flyers-03 · Buổi 28 · 11/04/2026</h3><button class="btn btn-primary">Lưu điểm danh</button></div>
+      <table><thead><tr><th>Học viên</th><th>Buổi còn</th><th>Trạng thái</th></tr></thead><tbody>
+        <tr><td>Nguyễn Bảo An</td><td><b style="color:var(--danger)">2 → 1</b></td><td><button class="btn-sm ok">Có mặt</button> <button class="btn-sm">Vắng CP</button> <button class="btn-sm">Vắng KP</button></td></tr>
+        <tr><td>Lê Gia Bảo</td><td>24 → 23</td><td><button class="btn-sm ok">Có mặt</button> <button class="btn-sm">Vắng CP</button> <button class="btn-sm">Vắng KP</button></td></tr>
+        <tr><td>Trần Minh Quân</td><td>30 → 29</td><td><button class="btn-sm ok">Có mặt</button> <button class="btn-sm">Vắng CP</button> <button class="btn-sm">Vắng KP</button></td></tr>
+        <tr><td>Hoàng Thảo My</td><td>18 → 18</td><td><button class="btn-sm">Có mặt</button> <button class="btn-sm ok">Vắng CP</button> <button class="btn-sm">Vắng KP</button></td></tr>
+        <tr><td>Phạm Hà Anh</td><td>22 → 21</td><td><button class="btn-sm ok">Có mặt</button> <button class="btn-sm">Vắng CP</button> <button class="btn-sm">Vắng KP</button></td></tr>
+      </tbody></table>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">⚠️ Hệ thống tự động trừ 1 buổi khi điểm danh có mặt. Khi còn 3 buổi, PH sẽ nhận cảnh báo gia hạn.</p>
+    </div>
+  `},
+  fees:{title:'Thu phí & gói buổi học', html:`
+    <div class="panel"><h3>HV sắp hết buổi (cần gia hạn)</h3>
+    <table><thead><tr><th>HV</th><th>Lớp</th><th>Còn</th><th>PH</th><th>Hành động</th></tr></thead><tbody>
+      <tr><td>Nguyễn Bảo An</td><td>TN-Flyers-03</td><td><span class="tag tag-danger">2 buổi</span></td><td>Chị Hoa</td><td><button class="btn-sm primary">Gọi gia hạn</button></td></tr>
+      <tr><td>Vũ Ngọc Lan</td><td>TN-Movers-02</td><td><span class="tag tag-danger">3 buổi</span></td><td>Anh Dũng</td><td><button class="btn-sm primary">Gọi gia hạn</button></td></tr>
+      <tr><td>Đỗ Hải Nam</td><td>IELTS-5.5-01</td><td><span class="tag tag-warn">4 buổi</span></td><td>Chị Lan</td><td><button class="btn-sm">Liên hệ</button></td></tr>
+    </tbody></table></div>
+    <div class="panel"><div class="head"><h3>Phiếu thu đã lập</h3><button class="btn btn-primary">+ Tạo phiếu thu</button></div>
+    <table><thead><tr><th>Mã</th><th>HV</th><th>Gói</th><th>Số tiền</th><th>Trạng thái</th></tr></thead><tbody>
+      <tr><td>#2301</td><td>Bảo An</td><td>Gói 40 buổi</td><td>12,000,000đ</td><td><span class="tag tag-warn">Chờ Admin duyệt</span></td></tr>
+      <tr><td>#2302</td><td>Khánh Vy</td><td>Gói 20 buổi</td><td>8,500,000đ</td><td><span class="tag tag-warn">Chờ Admin duyệt</span></td></tr>
+      <tr><td>#2300</td><td>Nhật Minh</td><td>Gói 40 buổi</td><td>12,000,000đ</td><td><span class="tag tag-ok">Đã duyệt · Hóa đơn</span></td></tr>
+    </tbody></table></div>
+  `}
+};
+function setHv(k,el){activate(el);document.getElementById('hv-title').textContent=hvViews[k].title;document.getElementById('hv-content').innerHTML=hvViews[k].html}
+
+/* ========== GIÁO VIÊN VIEWS ========== */
+const gvViews = {
+  overview:{title:'Dashboard Giáo viên', html:`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Lớp đang dạy</div><div class="val">6</div><div class="diff">2 lớp chủ nhiệm</div></div>
+      <div class="kpi"><div class="lbl">Buổi tuần này</div><div class="val">12</div><div class="diff up">Đã dạy 8 buổi</div></div>
+      <div class="kpi"><div class="lbl">Bài chờ chấm</div><div class="val">24</div><div class="diff down">Cần nhập điểm</div></div>
+      <div class="kpi"><div class="lbl">HV đang theo dõi</div><div class="val">72</div><div class="diff">Trong 6 lớp</div></div>
+    </div>
+    <div class="panel"><h3>📅 Hôm nay (11/04/2026)</h3>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>17:30 — TN-Movers-01 · P.102</b><span>GV đứng lớp · Bài 15: Present Continuous</span></div><button class="btn-sm primary">Xem nội dung</button></div>
+      <div class="list-item"><div class="li-dot ok"></div><div class="body"><b>18:00 — TN-Flyers-03 · P.201 (chủ nhiệm)</b><span>Bài 28: Describing people · Cần điểm danh</span></div><button class="btn-sm primary">Xem nội dung</button></div>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>19:30 — IELTS-5.5-02 · P.305</b><span>GV đứng lớp · Speaking Part 2: Describe an object</span></div><button class="btn-sm primary">Xem nội dung</button></div>
+    </div>
+  `},
+  schedule:{title:'Lịch dạy của tôi', html:`
+    <div class="panel"><div class="head"><h3>Lịch tuần này (06/04 – 12/04)</h3><div><button class="btn-sm">← Tuần trước</button> <button class="btn-sm">Tuần sau →</button></div></div>
+      <div class="schedule">
+        <div class="sch-day"><b>T2 06/04</b><div class="sch-event green">17:30 Movers-01</div><div class="sch-event">18:00 Flyers-03 ⭐</div></div>
+        <div class="sch-day"><b>T3 07/04</b><div class="sch-event orange">19:30 IELTS-5.5-02</div></div>
+        <div class="sch-day"><b>T4 08/04</b><div class="sch-event green">17:30 Movers-01</div><div class="sch-event">18:00 Flyers-03 ⭐</div></div>
+        <div class="sch-day"><b>T5 09/04</b><div class="sch-event orange">19:30 IELTS-5.5-02</div></div>
+        <div class="sch-day"><b>T6 10/04</b><div class="sch-event green">17:30 Movers-01</div><div class="sch-event">18:00 Flyers-03 ⭐</div></div>
+        <div class="sch-day"><b>T7 11/04</b><div class="sch-event orange">19:30 IELTS-5.5-02</div></div>
+        <div class="sch-day"><b>CN 12/04</b><span style="color:var(--muted);font-size:12px">Nghỉ</span></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">⭐ = Lớp chủ nhiệm</p>
+    </div>
+  `},
+  content:{title:'Nội dung giảng dạy', html:`
+    <div class="panel"><h3>TN-Flyers-03 — Bài 28: Describing people</h3>
+      <p style="color:var(--muted);font-size:14px">Giáo trình: <b>Cambridge Flyers Unit 6</b> · Thời lượng 90 phút</p>
+      <div style="background:var(--brand-soft);padding:16px;border-radius:10px;margin:12px 0">
+        <b>📌 Mục tiêu bài học:</b>
+        <ul><li>Học từ vựng mô tả ngoại hình (tall, short, curly, straight...)</li><li>Sử dụng cấu trúc "He/She has... / He/She is..."</li><li>Thực hành speaking: mô tả bạn bên cạnh</li></ul>
+      </div>
+      <b>📚 Hoạt động:</b>
+      <ol style="color:var(--muted);line-height:1.9">
+        <li>Warm-up: Guess who game (10')</li>
+        <li>Vocabulary presentation với flashcards (15')</li>
+        <li>Listening: Track 28 — Who is it? (15')</li>
+        <li>Pair work: Describe & draw (20')</li>
+        <li>Writing: Describe your best friend (20')</li>
+        <li>Wrap-up & homework (10')</li>
+      </ol>
+      <b>📎 Tài liệu:</b>
+      <div style="display:flex;gap:10px;margin-top:8px"><button class="btn-sm">📄 Flashcards.pdf</button><button class="btn-sm">🎵 Audio Track 28</button><button class="btn-sm">📝 Worksheet</button></div>
+    </div>
+    <div class="panel"><h3>Ghi chú buổi trước (Bài 27)</h3>
+      <p style="color:var(--muted);font-size:14px">Lớp tiếp thu tốt phần vocabulary. Bảo An và Thảo My vẫn còn nhầm "has/have". Cần ôn lại đầu buổi 28.</p>
+    </div>
+  `},
+  grades:{title:'Chấm bài & nhập điểm', html:`
+    <div class="panel">
+      <div class="head"><h3>Bảng điểm — TN-Flyers-03</h3><div><select style="padding:8px;border-radius:6px;border:1px solid var(--line)"><option>Bài tập tuần 8</option><option>Kiểm tra giữa kỳ</option><option>Thi cuối khóa</option></select></div></div>
+      <table><thead><tr><th>HV</th><th>Reading</th><th>Listening</th><th>Writing</th><th>Tổng</th><th>Nhận xét</th></tr></thead><tbody>
+        <tr><td>Nguyễn Bảo An</td><td><input value="8" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="7" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="7.5" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><b>7.5</b></td><td><input placeholder="Nhận xét..." style="width:200px;padding:4px;border:1px solid var(--line);border-radius:4px" value="Tiến bộ rõ"></td></tr>
+        <tr><td>Lê Gia Bảo</td><td><input value="9" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="8.5" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="8" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><b>8.5</b></td><td><input placeholder="Nhận xét..." style="width:200px;padding:4px;border:1px solid var(--line);border-radius:4px" value="Xuất sắc"></td></tr>
+        <tr><td>Trần Minh Quân</td><td><input value="7" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="7.5" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="6.5" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><b>7.0</b></td><td><input placeholder="Nhận xét..." style="width:200px;padding:4px;border:1px solid var(--line);border-radius:4px" value="Cần luyện writing"></td></tr>
+        <tr><td>Hoàng Thảo My</td><td><input value="6" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="6.5" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><input value="6" style="width:50px;padding:4px;border:1px solid var(--line);border-radius:4px"></td><td><b>6.2</b></td><td><input placeholder="Nhận xét..." style="width:200px;padding:4px;border:1px solid var(--line);border-radius:4px" value="Cần luyện tập thêm"></td></tr>
+      </tbody></table>
+      <div style="margin-top:16px;text-align:right"><button class="btn btn-primary">💾 Lưu & gửi cho HV/PH</button></div>
+    </div>
+  `},
+  homeroom:{title:'Lớp chủ nhiệm', html:`
+    <div class="panel"><h3>TN-Flyers-03 · GV chủ nhiệm: Phạm Trang</h3>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="lbl">Sĩ số</div><div class="val">10/12</div></div>
+        <div class="kpi"><div class="lbl">Điểm TB lớp</div><div class="val">7.4</div></div>
+        <div class="kpi"><div class="lbl">Chuyên cần</div><div class="val">92%</div></div>
+      </div>
+    </div>
+    <div class="panel"><h3>HV cần lưu ý</h3>
+      <div class="list-item"><div class="li-dot danger"></div><div class="body"><b>Hoàng Thảo My — Vắng 4/28 buổi</b><span>Điểm kiểm tra giảm. Đề nghị Học vụ liên hệ PH.</span></div><button class="btn-sm primary">Gửi Học vụ</button></div>
+      <div class="list-item"><div class="li-dot warn"></div><div class="body"><b>Nguyễn Bảo An — Sắp hết buổi</b><span>Còn 2 buổi. Học vụ đang liên hệ gia hạn.</span></div></div>
+      <div class="list-item"><div class="li-dot ok"></div><div class="body"><b>Lê Gia Bảo — Tiến bộ xuất sắc</b><span>Điểm TB 8.5. Gợi ý cho chuyển lớp nâng cao.</span></div></div>
+    </div>
+  `}
+};
+function setGv(k,el){activate(el);document.getElementById('gv-title').textContent=gvViews[k].title;document.getElementById('gv-content').innerHTML=gvViews[k].html}
+
+/* ========== HỌC SINH VIEWS ========== */
+const hsViews = {
+  overview:{title:'Chào Bảo An 👋', html:`
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">Buổi còn lại</div><div class="val" style="color:var(--danger)">2</div><div class="diff down">⚠️ Cần gia hạn</div></div>
+      <div class="kpi"><div class="lbl">Điểm TB</div><div class="val">7.5</div><div class="diff up">▲ 0.3</div></div>
+      <div class="kpi"><div class="lbl">Chuyên cần</div><div class="val">93%</div><div class="diff">26/28 buổi</div></div>
+      <div class="kpi"><div class="lbl">Tiến độ khóa</div><div class="val">58%</div><div class="diff">Bài 28/48</div></div>
+    </div>
+    <div class="panel"><h3>🎯 Lớp của tôi</h3>
+      <p><b>TN-Flyers-03</b> · GV chủ nhiệm: Cô Phạm Trang · Phòng 201 · T2-4-6, 18:00</p>
+      <p style="color:var(--muted);font-size:14px;margin-top:8px">Đang học: <b>Bài 28 — Describing people</b></p>
+      <div class="progress"><span style="width:58%"></span></div>
+    </div>
+    <div class="panel"><h3>🔔 Thông báo mới</h3>
+      <div class="list-item"><div class="li-dot danger"></div><div class="body"><b>Sắp hết buổi học</b><span>Chỉ còn 2 buổi. Phụ huynh vui lòng liên hệ gia hạn.</span></div></div>
+      <div class="list-item"><div class="li-dot"></div><div class="body"><b>Bài thi online tuần tới</b><span>Kiểm tra Unit 6 — 15/04/2026 · 18:00</span></div><button class="btn-sm primary">Xem chi tiết</button></div>
+      <div class="list-item"><div class="li-dot ok"></div><div class="body"><b>Điểm bài tập tuần 8 đã có</b><span>Reading 8 · Listening 7 · Writing 7.5</span></div></div>
+    </div>
+  `},
+  profile:{title:'Thông tin cá nhân', html:`
+    <div class="panel"><h3>Hồ sơ học viên</h3>
+      <table><tbody>
+        <tr><td style="width:180px;color:var(--muted)">Họ và tên</td><td><b>Nguyễn Bảo An</b></td></tr>
+        <tr><td style="color:var(--muted)">Mã HV</td><td>NZ-2024-0781</td></tr>
+        <tr><td style="color:var(--muted)">Ngày sinh</td><td>12/05/2016 (9 tuổi)</td></tr>
+        <tr><td style="color:var(--muted)">Lớp hiện tại</td><td>TN-Flyers-03</td></tr>
+        <tr><td style="color:var(--muted)">Chương trình</td><td>Thiếu nhi — Flyers</td></tr>
+        <tr><td style="color:var(--muted)">Phụ huynh</td><td>Chị Hoa · 0912 xxx 456</td></tr>
+        <tr><td style="color:var(--muted)">Ngày nhập học</td><td>15/09/2025</td></tr>
+        <tr><td style="color:var(--muted)">Buổi còn lại</td><td><b style="color:var(--danger)">2 buổi</b></td></tr>
+      </tbody></table>
+    </div>
+  `},
+  results:{title:'Kết quả học tập', html:`
+    <div class="panel"><h3>Bảng điểm tổng hợp</h3>
+      <table><thead><tr><th>Bài</th><th>Reading</th><th>Listening</th><th>Writing</th><th>Tổng</th><th>Nhận xét GV</th></tr></thead><tbody>
+        <tr><td>Bài tập tuần 6</td><td>7</td><td>6.5</td><td>7</td><td><b>6.8</b></td><td>Cần luyện listening</td></tr>
+        <tr><td>Bài tập tuần 7</td><td>7.5</td><td>7</td><td>7</td><td><b>7.2</b></td><td>Tiến bộ</td></tr>
+        <tr><td>Kiểm tra giữa kỳ</td><td>8</td><td>7</td><td>7</td><td><b>7.3</b></td><td>Làm bài tốt hơn kỳ trước</td></tr>
+        <tr><td>Bài tập tuần 8</td><td>8</td><td>7</td><td>7.5</td><td><b>7.5</b></td><td>Tiến bộ rõ 👏</td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel"><h3>Biểu đồ tiến bộ</h3>
+      <div class="bar-chart">
+        <div class="bar" data-m="T6" style="height:68%"><span>6.8</span></div>
+        <div class="bar" data-m="T7" style="height:72%"><span>7.2</span></div>
+        <div class="bar" data-m="GK" style="height:73%"><span>7.3</span></div>
+        <div class="bar" data-m="T8" style="height:75%"><span>7.5</span></div>
+      </div><div style="height:28px"></div>
+    </div>
+  `},
+  exam:{title:'Thi online', html:`
+    <div class="panel"><h3>🗓️ Kỳ thi sắp tới</h3>
+      <div style="border:2px dashed var(--brand);border-radius:12px;padding:20px;background:var(--brand-soft)">
+        <b style="font-size:18px">Kiểm tra Unit 6 — Flyers</b>
+        <p style="margin:8px 0;color:var(--muted)">📅 15/04/2026 · 18:00 · Thời gian: 45 phút</p>
+        <p style="margin:0;color:var(--muted)">Bao gồm: Reading (15p) · Listening (15p) · Writing (15p)</p>
+        <button class="btn btn-primary" style="margin-top:12px" disabled>⏰ Chưa đến giờ thi</button>
+      </div>
+    </div>
+    <div class="panel"><h3>📝 Kết quả thi gần nhất</h3>
+    <table><thead><tr><th>Kỳ thi</th><th>Ngày</th><th>Reading</th><th>Listening</th><th>Writing</th><th>Tổng</th></tr></thead><tbody>
+      <tr><td>Kiểm tra Unit 5</td><td>25/03/2026</td><td>7.5</td><td>7</td><td>6.5</td><td><b>7.0</b></td></tr>
+      <tr><td>Kiểm tra giữa kỳ</td><td>08/03/2026</td><td>8</td><td>7</td><td>7</td><td><b>7.3</b></td></tr>
+      <tr><td>Kiểm tra Unit 4</td><td>18/02/2026</td><td>7</td><td>6.5</td><td>6</td><td><b>6.5</b></td></tr>
+    </tbody></table></div>
+    <div class="panel"><h3>📚 Luyện tập</h3>
+    <div class="cards-3">
+      <div class="card"><div class="ico">📖</div><h3>Reading practice</h3><p>20 bài luyện đọc chuẩn Flyers</p><button class="btn-sm primary" style="margin-top:8px">Bắt đầu</button></div>
+      <div class="card"><div class="ico">🎧</div><h3>Listening practice</h3><p>15 bài nghe có audio</p><button class="btn-sm primary" style="margin-top:8px">Bắt đầu</button></div>
+      <div class="card"><div class="ico">✍️</div><h3>Writing practice</h3><p>10 đề viết có gợi ý</p><button class="btn-sm primary" style="margin-top:8px">Bắt đầu</button></div>
+    </div></div>
+  `},
+  attend:{title:'Lịch sử điểm danh', html:`
+    <div class="panel"><h3>Điểm danh TN-Flyers-03 (28/48 buổi)</h3>
+      <p style="color:var(--muted);font-size:14px">Tỉ lệ chuyên cần: <b style="color:var(--ok)">93% (26/28)</b></p>
+      <table><thead><tr><th>Buổi</th><th>Ngày</th><th>Bài</th><th>Trạng thái</th></tr></thead><tbody>
+        <tr><td>28</td><td>11/04/2026</td><td>Describing people</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+        <tr><td>27</td><td>09/04/2026</td><td>Past simple review</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+        <tr><td>26</td><td>06/04/2026</td><td>Weather & seasons</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+        <tr><td>25</td><td>04/04/2026</td><td>Clothes vocabulary</td><td><span class="tag tag-warn">Vắng có phép</span></td></tr>
+        <tr><td>24</td><td>02/04/2026</td><td>At the restaurant</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+        <tr><td>23</td><td>30/03/2026</td><td>Food vocabulary</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+        <tr><td>22</td><td>28/03/2026</td><td>Kiểm tra Unit 5</td><td><span class="tag tag-ok">Có mặt</span></td></tr>
+      </tbody></table>
+    </div>
+  `}
+};
+function setHs(k,el){activate(el);document.getElementById('hs-title').textContent=hsViews[k].title;document.getElementById('hs-content').innerHTML=hsViews[k].html}
+
+/* Init */
+setAdmin('overview');
+setHv('overview');
+setGv('overview');
+setHs('overview');
+</script>
+</body>
+</html>
